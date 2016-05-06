@@ -84,7 +84,7 @@ public class DashboardRedirectionFilter implements Filter {
 
             bind(RequestTokenExtractor.class).to(com.codenvy.auth.sso.client.token.ChainedTokenExtractor.class);
             bind(com.codenvy.auth.sso.client.SSOContextResolver.class).to(com.codenvy.auth.sso.client.EnvironmentContextResolver.class);
-            bind(ServerClient.class).to(com.codenvy.auth.sso.client.HttpSsoServerClient.class);
+            bind(ServerClient.class).to(com.codenvy.auth.sso.client.MachineSsoServerClient.class);
             bind(RequestFilter.class).to(com.codenvy.auth.sso.client.filter.RegexpRequestFilter.class);
         }
     }

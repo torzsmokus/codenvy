@@ -30,7 +30,7 @@ import org.eclipse.che.inject.DynaModule;
 public class SsoClientModule extends AbstractModule {
     @Override
     protected void configure() {
-        bind(ServerClient.class).to(HttpSsoServerClient.class);
+        bind(ServerClient.class).to(MachineSsoServerClient.class);
         bind(RequestTokenExtractor.class).to(ChainedTokenExtractor.class);
         bind(SessionStore.class);
     }

@@ -47,7 +47,7 @@ public class IdeModule extends AbstractModule {
         bind(TokenHandler.class).annotatedWith(Names.named("delegated.handler"))
                                 .to(com.codenvy.auth.sso.client.RecoverableTokenHandler.class);
 
-        bind(ServerClient.class).to(com.codenvy.auth.sso.client.HttpSsoServerClient.class);
+        bind(ServerClient.class).to(com.codenvy.auth.sso.client.MachineSsoServerClient.class);
         bind(RequestFilter.class).to(com.codenvy.auth.sso.client.filter.RegexpRequestFilter.class);
     }
 }

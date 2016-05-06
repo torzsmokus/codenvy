@@ -51,7 +51,7 @@ public class MachineTokenRegistry {
     public void generateToken(String userId, String workspaceId) {
         lock.writeLock().lock();
         try {
-            tokens.put(workspaceId, userId, generate("", 128));
+            tokens.put(workspaceId, userId, generate("machine", 128));
         } finally {
             lock.writeLock().unlock();
         }
