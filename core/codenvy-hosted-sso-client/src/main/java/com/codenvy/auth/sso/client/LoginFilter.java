@@ -16,10 +16,14 @@ package com.codenvy.auth.sso.client;
 
 import com.codenvy.auth.sso.client.filter.RequestFilter;
 import com.codenvy.auth.sso.client.token.RequestTokenExtractor;
-
-import org.eclipse.che.commons.user.User;
 import com.google.inject.name.Named;
 
+import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.notification.EventSubscriber;
+import org.eclipse.che.api.machine.shared.dto.event.MachineStatusEvent;
+import org.eclipse.che.api.workspace.shared.Constants;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
+import org.eclipse.che.commons.user.User;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

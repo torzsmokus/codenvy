@@ -20,8 +20,10 @@ import com.google.common.collect.Table;
 import org.eclipse.che.api.core.NotFoundException;
 
 import javax.inject.Singleton;
+import java.util.List;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
@@ -30,9 +32,9 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
  * Table-based storage of machine security tokens.
  * Table rows is workspace id's, columns - user id's.
  * Table is synchronized externally as required by its javadoc.
- * @see {HashBasedTable}
  *
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
+ * @see {HashBasedTable}
  */
 @Singleton
 public class MachineTokenRegistry {
@@ -44,9 +46,9 @@ public class MachineTokenRegistry {
      * Generates new machine security token for given user and workspace.
      *
      * @param userId
-     *        id of user to generate token for
+     *         id of user to generate token for
      * @param workspaceId
-     *        id of workspace to generate token for
+     *         id of workspace to generate token for
      */
     public void generateToken(String userId, String workspaceId) {
         lock.writeLock().lock();
@@ -57,13 +59,21 @@ public class MachineTokenRegistry {
         }
     }
 
+    public List<String> getTokensByWorkspace(String wsId) {
+        return tokens.cellSet()
+                     .stream()
+                     .filter(cell -> cell.getRowKey().equals(wsId))
+                     .map(Table.Cell::getValue)
+                     .collect(Collectors.toList());
+    }
+
     /**
      * Gets machine security token for user and workspace.
      *
      * @param userId
-     *        id of user to get token
+     *         id of user to get token
      * @param workspaceId
-     *        id of workspace to get token
+     *         id of workspace to get token
      * @return machine security token
      * @throws NotFoundException
      *         when no token exists for given user and workspace

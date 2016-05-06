@@ -15,15 +15,16 @@
 package com.codenvy.auth.sso.client;
 
 import com.codenvy.machine.authentication.server.MachineTokenRegistry;
+import com.google.common.collect.ImmutableSet;
 import com.google.inject.name.Named;
 
 import org.eclipse.che.api.core.ApiException;
-import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.notification.EventService;
+import org.eclipse.che.api.core.notification.EventSubscriber;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
-import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.api.user.server.UserService;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.commons.user.User;
 import org.eclipse.che.commons.user.UserImpl;
 import org.slf4j.Logger;
@@ -36,7 +37,6 @@ import java.io.IOException;
 
 @Singleton
 public class MachineSsoServerClient extends HttpSsoServerClient {
-
     private static final Logger LOG = LoggerFactory.getLogger(MachineSsoServerClient.class);
 
     private final MachineTokenRegistry tokenRegistry;
@@ -44,9 +44,22 @@ public class MachineSsoServerClient extends HttpSsoServerClient {
     @Inject
     public MachineSsoServerClient(@Named("api.endpoint") String apiEndpoint,
                                   HttpJsonRequestFactory requestFactory,
-                                  MachineTokenRegistry tokenRegistry) {
+                                  MachineTokenRegistry tokenRegistry,
+                                  SessionStore sessionStore,
+                                  EventService eventService) {
         super(apiEndpoint, requestFactory);
         this.tokenRegistry = tokenRegistry;
+        eventService.subscribe(new EventSubscriber<WorkspaceStatusEvent>() {
+            @Override
+            public void onEvent(WorkspaceStatusEvent event) {
+                if (event.getEventType().equals(WorkspaceStatusEvent.EventType.STOPPED)) {
+                    final String wsId = event.getWorkspaceId();
+                    tokenRegistry.getTokensByWorkspace(wsId)
+                                 .forEach(sessionStore::removeSessionByToken);
+                    tokenRegistry.removeTokens(wsId);
+                }
+            }
+        });
     }
 
     @Override
@@ -63,9 +76,9 @@ public class MachineSsoServerClient extends HttpSsoServerClient {
                                                       .useGetMethod()
                                                       .request()
                                                       .asDto(UserDescriptor.class);
-            return new UserImpl(user.getName(), user.getId(), token, null, false);
-        } catch (ApiException | IOException x) {
-            LOG.warn(x.getLocalizedMessage(), x);
+            return new UserImpl(user.getName(), user.getId(), token, ImmutableSet.of("user"), false);
+        } catch (ApiException | IOException ex) {
+            LOG.warn(ex.getLocalizedMessage(), ex);
         }
         return null;
     }

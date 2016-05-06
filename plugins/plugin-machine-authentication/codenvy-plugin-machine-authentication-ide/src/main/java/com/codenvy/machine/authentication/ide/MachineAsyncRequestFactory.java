@@ -25,13 +25,26 @@ import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Promises;
+import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
 import org.eclipse.che.ide.MimeType;
+import org.eclipse.che.ide.api.app.AppContext;
+import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequest;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
+import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
+import org.eclipse.che.ide.util.loging.Log;
+import org.eclipse.che.ide.websocket.MessageBus;
+import org.eclipse.che.ide.websocket.MessageBusProvider;
+import org.eclipse.che.ide.websocket.WebSocketException;
+import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
+import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import java.util.List;
+
+import static org.eclipse.che.ide.api.notification.StatusNotification.DisplayMode.NOT_EMERGE_MODE;
+import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * Looks at the request and substitutes an appropriate implementation.
@@ -44,15 +57,46 @@ public class MachineAsyncRequestFactory extends AsyncRequestFactory {
 
     private final Provider<MachineTokenServiceClient> machineTokenServiceProvider;
     private final DtoFactory                          dtoFactory;
+    private final NotificationManager                 notificationManager;
 
     private String machineToken;
 
     @Inject
     public MachineAsyncRequestFactory(DtoFactory dtoFactory,
-                                      Provider<MachineTokenServiceClient> machineTokenServiceProvider) {
+                                      Provider<MachineTokenServiceClient> machineTokenServiceProvider,
+                                      AppContext appContext,
+                                      DtoUnmarshallerFactory dtoUnmarshallerFactory,
+                                      NotificationManager notificationManager,
+                                      MessageBusProvider messageBusProvider) {
         super(dtoFactory);
         this.machineTokenServiceProvider = machineTokenServiceProvider;
         this.dtoFactory = dtoFactory;
+        this.notificationManager = notificationManager;
+        final Unmarshallable<WorkspaceStatusEvent> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(WorkspaceStatusEvent.class);
+        try {
+            MessageBus messageBus = messageBusProvider.getMessageBus();
+            if (messageBus == null) {
+                messageBus = messageBusProvider.createMessageBus(appContext.getWorkspaceId());
+            }
+            messageBus.subscribe("workspace:" + appContext.getWorkspaceId(), new SubscriptionHandler<WorkspaceStatusEvent>(unmarshaller) {
+
+                @Override
+                protected void onMessageReceived(WorkspaceStatusEvent statusEvent) {
+                    switch (statusEvent.getEventType()) {
+                        case RUNNING: {
+                            machineToken = null;
+                        }
+                    }
+                }
+
+                @Override
+                protected void onErrorReceived(Throwable exception) {
+                    MachineAsyncRequestFactory.this.notificationManager.notify(exception.getMessage(), FAIL, NOT_EMERGE_MODE);
+                }
+            });
+        } catch (WebSocketException ex) {
+            Log.error(getClass(), ex);
+        }
     }
 
     @Override

@@ -39,11 +39,11 @@ public class MachineTokenInterceptor implements MethodInterceptor {
     public Object invoke(MethodInvocation invocation) throws Throwable {
         Object result = invocation.proceed();
 
-        if (invocation.getMethod().getName().equals("stopWorkspace")) {
-            final String workspaceId = (String)invocation.getArguments()[0];
-            tokenRegistry.removeTokens(workspaceId);
-            return result;
-        }
+//        if (invocation.getMethod().getName().equals("stopWorkspace")) {
+//            final String workspaceId = (String)invocation.getArguments()[0];
+//            tokenRegistry.removeTokens(workspaceId);
+//            return result;
+//        }
 
         if (result instanceof Workspace) {
             final Workspace workspace = ((Workspace)result);

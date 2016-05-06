@@ -101,14 +101,14 @@ public class MachineTokenInterceptorTest {
         }
     }
 
-    @Test
-    public void shouldRemoveTokenOnWorkspaceStop() throws Throwable {
-        final String workspaceId = "testWs123";
-
-        workspaceManager.stopWorkspace(workspaceId);
-
-        verify(tokenRegistry).removeTokens(eq(workspaceId));
-    }
+//    @Test
+//    public void shouldRemoveTokenOnWorkspaceStop() throws Throwable {
+//        final String workspaceId = "testWs123";
+//
+//        workspaceManager.stopWorkspace(workspaceId);
+//
+//        verify(tokenRegistry).removeTokens(eq(workspaceId));
+//    }
 
 
     @Test

@@ -35,6 +35,6 @@ public class InterceptorModule extends AbstractModule {
         requestInjection(tokenInterceptor);
         bindInterceptor(subclassesOf(WorkspaceManager.class), names("startWorkspace"), tokenInterceptor);
         bindInterceptor(subclassesOf(WorkspaceManager.class), names("recoverWorkspace"), tokenInterceptor);
-        bindInterceptor(subclassesOf(WorkspaceManager.class), names("stopWorkspace"), tokenInterceptor);
+//        bindInterceptor(subclassesOf(WorkspaceManager.class), names("stopWorkspace"), tokenInterceptor);
     }
 }
