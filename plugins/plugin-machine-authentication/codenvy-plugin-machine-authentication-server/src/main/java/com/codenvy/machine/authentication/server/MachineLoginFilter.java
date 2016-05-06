@@ -18,6 +18,9 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.user.shared.dto.UserDescriptor;
+import org.eclipse.che.commons.env.EnvironmentContext;
+import org.eclipse.che.commons.user.User;
+import org.eclipse.che.commons.user.UserImpl;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -65,13 +68,14 @@ public class MachineLoginFilter implements Filter {
     @Override
     public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain) throws IOException,
                                                                                                      ServletException {
-        final String machineToken = extractToken(request);
         final HttpServletRequest httpReq = (HttpServletRequest)request;
         final HttpSession session = httpReq.getSession(false);
         if (session != null) {
+            EnvironmentContext.getCurrent().setUser((User)session.getAttribute("principal"));
             chain.doFilter(request, response);
             return;
         }
+        final String machineToken = extractToken(request);
         if (isNullOrEmpty(machineToken)) {
             ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED,
                                                       "Authentication on machine failed, token is missed");
@@ -81,10 +85,13 @@ public class MachineLoginFilter implements Filter {
         try {
             final UserDescriptor user = requestFactory.fromUrl(tokenServiceEndpoint + "/user/" + extractToken(request))
                                                       .useGetMethod()
-                                                      .setAuthorizationHeader(userToken)
+                                                      .setAuthorizationHeader(machineToken)
                                                       .request()
                                                       .asDto(UserDescriptor.class);
-            httpReq.getSession(true);
+            final User machineUser = new UserImpl(user.getName(), user.getId(), machineToken, null, false);
+            EnvironmentContext.getCurrent().setUser(machineUser);
+            final HttpSession httpSession = httpReq.getSession(true);
+            httpSession.setAttribute("principal", machineUser);
             chain.doFilter(request, response);
         } catch (NotFoundException nfEx) {
             ((HttpServletResponse)response).sendError(HttpServletResponse.SC_UNAUTHORIZED,

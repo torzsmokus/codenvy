@@ -37,9 +37,7 @@ public class MachineServletModule extends ServletModule {
         //filters
         filter("/*").through(CheCorsFilter.class);
         filter("/*").through(com.codenvy.machine.authentication.server.MachineLoginFilter.class);
-        filter("/*").through(com.codenvy.auth.sso.client.MachineRequestTokenInjectFilter.class);
         filter("/*").through(com.codenvy.workspace.LastAccessTimeFilter.class);
-        filterRegex("/(?!_sso/).*$").through(com.codenvy.auth.sso.client.LoginFilter.class);
 
         //servlets
         install(new com.codenvy.auth.sso.client.deploy.SsoClientServletModule());
