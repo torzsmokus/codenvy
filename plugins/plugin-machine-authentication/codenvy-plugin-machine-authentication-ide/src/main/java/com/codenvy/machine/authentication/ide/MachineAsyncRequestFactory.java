@@ -20,31 +20,21 @@ import com.google.gwt.http.client.RequestBuilder;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.web.bindery.event.shared.EventBus;
 
 import org.eclipse.che.api.promises.client.Function;
 import org.eclipse.che.api.promises.client.FunctionException;
 import org.eclipse.che.api.promises.client.Promise;
 import org.eclipse.che.api.promises.client.js.Promises;
-import org.eclipse.che.api.workspace.shared.dto.event.WorkspaceStatusEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.WorkspaceStoppedEvent;
+import org.eclipse.che.api.workspace.gwt.client.event.WorkspaceStoppedHandler;
 import org.eclipse.che.ide.MimeType;
-import org.eclipse.che.ide.api.app.AppContext;
-import org.eclipse.che.ide.api.notification.NotificationManager;
 import org.eclipse.che.ide.dto.DtoFactory;
 import org.eclipse.che.ide.rest.AsyncRequest;
 import org.eclipse.che.ide.rest.AsyncRequestFactory;
-import org.eclipse.che.ide.rest.DtoUnmarshallerFactory;
 import org.eclipse.che.ide.rest.HTTPHeader;
-import org.eclipse.che.ide.util.loging.Log;
-import org.eclipse.che.ide.websocket.MessageBus;
-import org.eclipse.che.ide.websocket.MessageBusProvider;
-import org.eclipse.che.ide.websocket.WebSocketException;
-import org.eclipse.che.ide.websocket.rest.SubscriptionHandler;
-import org.eclipse.che.ide.websocket.rest.Unmarshallable;
 
 import java.util.List;
-
-import static org.eclipse.che.ide.api.notification.StatusNotification.DisplayMode.NOT_EMERGE_MODE;
-import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAIL;
 
 /**
  * Looks at the request and substitutes an appropriate implementation.
@@ -52,51 +42,22 @@ import static org.eclipse.che.ide.api.notification.StatusNotification.Status.FAI
  * @author Anton Korneta
  */
 @Singleton
-public class MachineAsyncRequestFactory extends AsyncRequestFactory {
+public class MachineAsyncRequestFactory extends AsyncRequestFactory implements WorkspaceStoppedHandler {
     private static final String DTO_CONTENT_TYPE = MimeType.APPLICATION_JSON;
 
     private final Provider<MachineTokenServiceClient> machineTokenServiceProvider;
     private final DtoFactory                          dtoFactory;
-    private final NotificationManager                 notificationManager;
 
     private String machineToken;
 
     @Inject
     public MachineAsyncRequestFactory(DtoFactory dtoFactory,
                                       Provider<MachineTokenServiceClient> machineTokenServiceProvider,
-                                      AppContext appContext,
-                                      DtoUnmarshallerFactory dtoUnmarshallerFactory,
-                                      NotificationManager notificationManager,
-                                      MessageBusProvider messageBusProvider) {
+                                      EventBus eventBus) {
         super(dtoFactory);
         this.machineTokenServiceProvider = machineTokenServiceProvider;
         this.dtoFactory = dtoFactory;
-        this.notificationManager = notificationManager;
-        final Unmarshallable<WorkspaceStatusEvent> unmarshaller = dtoUnmarshallerFactory.newWSUnmarshaller(WorkspaceStatusEvent.class);
-        try {
-            MessageBus messageBus = messageBusProvider.getMessageBus();
-            if (messageBus == null) {
-                messageBus = messageBusProvider.createMessageBus(appContext.getWorkspaceId());
-            }
-            messageBus.subscribe("workspace:" + appContext.getWorkspaceId(), new SubscriptionHandler<WorkspaceStatusEvent>(unmarshaller) {
-
-                @Override
-                protected void onMessageReceived(WorkspaceStatusEvent statusEvent) {
-                    switch (statusEvent.getEventType()) {
-                        case RUNNING: {
-                            machineToken = null;
-                        }
-                    }
-                }
-
-                @Override
-                protected void onErrorReceived(Throwable exception) {
-                    MachineAsyncRequestFactory.this.notificationManager.notify(exception.getMessage(), FAIL, NOT_EMERGE_MODE);
-                }
-            });
-        } catch (WebSocketException ex) {
-            Log.error(getClass(), ex);
-        }
+        eventBus.addHandler(WorkspaceStoppedEvent.TYPE, this);
     }
 
     @Override
@@ -136,5 +97,10 @@ public class MachineAsyncRequestFactory extends AsyncRequestFactory {
                                                   }
                                               });
         }
+    }
+
+    @Override
+    public void onWorkspaceStopped(WorkspaceStoppedEvent event) {
+        machineToken = null;
     }
 }
