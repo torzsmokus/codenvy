@@ -53,10 +53,9 @@ public class MachineSsoServerClient extends HttpSsoServerClient {
             @Override
             public void onEvent(WorkspaceStatusEvent event) {
                 if (event.getEventType().equals(WorkspaceStatusEvent.EventType.STOPPED)) {
-                    final String wsId = event.getWorkspaceId();
-                    tokenRegistry.getTokensByWorkspace(wsId)
+                    tokenRegistry.removeTokens(event.getWorkspaceId())
+                                 .values()
                                  .forEach(sessionStore::removeSessionByToken);
-                    tokenRegistry.removeTokens(wsId);
                 }
             }
         });

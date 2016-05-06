@@ -20,10 +20,10 @@ import com.google.common.collect.Table;
 import org.eclipse.che.api.core.NotFoundException;
 
 import javax.inject.Singleton;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.stream.Collectors;
 
 import static java.lang.String.format;
 import static org.eclipse.che.commons.lang.NameGenerator.generate;
@@ -34,7 +34,7 @@ import static org.eclipse.che.commons.lang.NameGenerator.generate;
  * Table is synchronized externally as required by its javadoc.
  *
  * @author Max Shaposhnik (mshaposhnik@codenvy.com)
- * @see {HashBasedTable}
+ * @see HashBasedTable
  */
 @Singleton
 public class MachineTokenRegistry {
@@ -49,22 +49,17 @@ public class MachineTokenRegistry {
      *         id of user to generate token for
      * @param workspaceId
      *         id of workspace to generate token for
+     * @return generated token value
      */
-    public void generateToken(String userId, String workspaceId) {
+    public String generateToken(String userId, String workspaceId) {
         lock.writeLock().lock();
         try {
-            tokens.put(workspaceId, userId, generate("machine", 128));
+            final String token = generate("machine", 128);
+            tokens.put(workspaceId, userId, token);
+            return token;
         } finally {
             lock.writeLock().unlock();
         }
-    }
-
-    public List<String> getTokensByWorkspace(String wsId) {
-        return tokens.cellSet()
-                     .stream()
-                     .filter(cell -> cell.getRowKey().equals(wsId))
-                     .map(Table.Cell::getValue)
-                     .collect(Collectors.toList());
     }
 
     /**
@@ -117,11 +112,15 @@ public class MachineTokenRegistry {
      *
      * @param workspaceId
      *         workspace to invalidate tokens
+     * @return the copy of the tokens row, where row
+     * is a map where key is user id and value is token
      */
-    public void removeTokens(String workspaceId) {
+    public Map<String, String> removeTokens(String workspaceId) {
         lock.writeLock().lock();
         try {
+            final Map<String, String> rowCopy = new HashMap<>(tokens.row(workspaceId));
             tokens.row(workspaceId).clear();
+            return rowCopy;
         } finally {
             lock.writeLock().unlock();
         }
