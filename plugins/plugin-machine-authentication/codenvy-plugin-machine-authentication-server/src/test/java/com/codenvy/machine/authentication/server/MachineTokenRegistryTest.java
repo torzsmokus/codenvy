@@ -32,7 +32,7 @@ import static org.testng.Assert.assertTrue;
 public class MachineTokenRegistryTest {
 
     @Test
-    public void removeTokensShouldReturnUserToTokeMap() throws Exception {
+    public void removeTokensShouldReturnUserToTokenMap() throws Exception {
         final MachineTokenRegistry registry = new MachineTokenRegistry();
 
         final Map<String, String> userToToken = new HashMap<>();
@@ -42,7 +42,10 @@ public class MachineTokenRegistryTest {
         registry.generateToken("user1", "workspace234");
 
 
-        assertEquals(registry.removeTokens("workspace123"), userToToken);
+        final Map<String, String> removedTokens = registry.removeTokens("workspace123");
+
+
+        assertEquals(removedTokens, userToToken);
         assertTrue(exists(registry, "user1", "workspace234"));
         assertFalse(exists(registry, "user1", "workspace123"));
         assertFalse(exists(registry, "user2", "workspace123"));

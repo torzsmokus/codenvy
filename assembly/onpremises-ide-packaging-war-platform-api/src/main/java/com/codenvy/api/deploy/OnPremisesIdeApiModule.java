@@ -30,7 +30,10 @@ import com.codenvy.api.user.server.AdminUserService;
 import com.codenvy.api.user.server.dao.AdminUserDao;
 import com.codenvy.api.workspace.server.dao.WorkerDao;
 import com.codenvy.auth.sso.client.EnvironmentContextResolver;
+import com.codenvy.auth.sso.client.MachineSessionInvalidator;
+import com.codenvy.auth.sso.client.MachineSsoServerClient;
 import com.codenvy.auth.sso.client.SSOContextResolver;
+import com.codenvy.auth.sso.client.ServerClient;
 import com.codenvy.auth.sso.client.TokenHandler;
 import com.codenvy.auth.sso.client.filter.ConjunctionRequestFilter;
 import com.codenvy.auth.sso.client.filter.DisjunctionRequestFilter;
@@ -206,6 +209,8 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(com.codenvy.machine.authentication.server.MachineTokenService.class);
         bind(WorkspaceServiceLinksInjector.class).to(com.codenvy.machine.authentication.server.AuthLinksInjector.class);
         install(new com.codenvy.machine.authentication.server.interceptor.InterceptorModule());
+        bind(ServerClient.class).to(MachineSsoServerClient.class);
+        bind(MachineSessionInvalidator.class);
 
         //SSO
         Multibinder<com.codenvy.api.dao.authentication.AuthenticationHandler> handlerBinder =
