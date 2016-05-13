@@ -36,13 +36,13 @@ public class MachineServletModule extends ServletModule {
         //filters
         filter("/*").through(com.codenvy.auth.sso.client.MachineRequestTokenInjectFilter.class);
         filter("/*").through(com.codenvy.workspace.LastAccessTimeFilter.class);
-        filterRegex("/(?!_sso/).*$").through(com.codenvy.auth.sso.client.LoginFilter.class);
+        filterRegex("/[^/]+/(?!_sso/).*$").through(com.codenvy.auth.sso.client.LoginFilter.class);
 
         bind(CheCorsFilter.class).in(Singleton.class);
         filter("/*").through(CheCorsFilter.class);
         //servlets
         install(new com.codenvy.auth.sso.client.deploy.SsoClientServletModule());
-        serveRegex("^/ext((?!(/(ws|eventbus)($|/.*)))/.*)").with(org.everrest.guice.servlet.GuiceEverrestServlet.class);
+//        serveRegex("^/ext((?!(/(ws|eventbus)($|/.*)))/.*)").with(org.everrest.guice.servlet.GuiceEverrestServlet.class);
         serveRegex("^/[^/]+/ext((?!(/(ws|eventbus)($|/.*)))/.*)").with(org.everrest.guice.servlet.GuiceEverrestServlet.class);
 
         bind(io.swagger.jaxrs.config.DefaultJaxrsConfig.class).asEagerSingleton();
