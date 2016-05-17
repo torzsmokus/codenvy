@@ -106,6 +106,9 @@ public class OnPremisesIdeApiServletModule extends ServletModule {
                "/permissions/*")
                 .through(com.codenvy.auth.sso.client.LoginFilter.class);
 
+        bind(org.apache.catalina.filters.RestCsrfPreventionFilter.class).in(Singleton.class);
+        filter("/*").through(org.apache.catalina.filters.RestCsrfPreventionFilter.class);
+
         bind(com.codahale.metrics.servlets.ThreadDumpServlet.class).in(Singleton.class);
         bind(com.codahale.metrics.servlets.PingServlet.class).in(Singleton.class);
         serve("/metrics/ping").with(com.codahale.metrics.servlets.PingServlet.class);

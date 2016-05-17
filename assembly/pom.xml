@@ -46,6 +46,6 @@
         <module>onpremises-ide-packaging-tomcat-im</module>
     </modules>
     <properties>
-        <site.classifier>onprem-se</site.classifier>
+        <site.classifier>stage</site.classifier>
     </properties>
 </project>

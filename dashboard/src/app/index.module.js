@@ -96,8 +96,44 @@ initModule.factory('AuthInterceptor', ($window, $cookies, $q, $location, $log) =
   };
 });
 
-initModule.config(['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) => {
+initModule.factory('CSRFNonceInterceptor', ($http, $q) => {
+  var token = false;
 
+  function requestToken() {
+      return $http({
+        method:"OPTIONS",
+        url: "/api",
+        headers: {
+          'X-CSRF-Token': 'fetch'
+        }
+      }).then((resp) => token = resp.headers('X-CSRF-Token'));
+    }
+
+  return {
+      request: function(config) {
+        if (config.url.indexOf("/api/") === -1) {
+            return config || $q.when(config);
+          }
+
+
+          return $q.when(token || requestToken())
+                   .then((token) => {
+                   config.headers['X-CSRF-Token'] = token;
+                   return config;
+                 })
+    },
+
+      responseError: (rejection) => {
+        if (rejection && rejection.config.url.indexOf("/ext/") !== -1) {
+            delete tokens[getWorkspaceId(rejection.config.url)];
+          }
+        return $q.reject(rejection);
+      }
+  }
+});
+
+initModule.config(['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) => {
+  $httpProvider.interceptors.push('CSRFNonceInterceptor')
   if (DEV) {
     console.log('adding auth interceptor');
     $httpProvider.interceptors.push('AuthInterceptor');

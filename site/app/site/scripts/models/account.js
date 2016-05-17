@@ -293,6 +293,26 @@
             return url  +  window.location.search + window.location.hash;
         };
 
+        var setCSRFFilter = function(){
+            var url = "/api/";
+            $.ajax({
+                url: url,
+                type: "OPTIONS",
+                headers: { 'X-CSRF-Token': 'fetch' },
+                success: function(response, textStatus, request){
+                    $.ajaxPrefilter(function(options, originalOptions, jqXHR){
+                        var method =  options.type.toLowerCase();
+                        if (method === "post"|| method === "put" || method === "delete") {
+                            jqXHR.setRequestHeader('X-CSRF-Token', request.getResponseHeader('X-CSRF-Token'));
+                        }
+                    });
+                },
+                error: function(response){
+                    console.log("Unable to fetch CSRF token:" + getResponseMessage(response));
+                }
+            });
+        };
+
         var getUserSettings = function() {
             var deferredResult = $.Deferred();
             var url = "/api/user/settings";
@@ -308,7 +328,7 @@
             });
             return deferredResult;
         };
-
+        setCSRFFilter();
         return {
             removeCookie: removeCookie,
             isWebsocketEnabled: isWebsocketEnabled,
