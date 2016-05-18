@@ -96,11 +96,11 @@ initModule.factory('AuthInterceptor', ($window, $cookies, $q, $location, $log) =
   };
 });
 
-initModule.factory('CSRFNonceInterceptor', ($http, $q) => {
+initModule.factory('CSRFNonceInterceptor', ($injector, $q) => {
   var token = false;
 
   function requestToken() {
-      return $http({
+      return $injector.get('$http')({
         method:"OPTIONS",
         url: "/api",
         headers: {
