@@ -301,8 +301,8 @@
                 headers: { 'X-CSRF-Token': 'fetch' },
                 success: function(response, textStatus, request){
                     $.ajaxPrefilter(function(options, originalOptions, jqXHR){
-                        var method =  options.type.toLowerCase();
-                        if (method === "post"|| method === "put" || method === "delete") {
+                        var method =  options.type.toUpperCase();
+                        if (method === "POST"|| method === "PUT" || method === "DELETE") {
                             jqXHR.setRequestHeader('X-CSRF-Token', request.getResponseHeader('X-CSRF-Token'));
                         }
                     });

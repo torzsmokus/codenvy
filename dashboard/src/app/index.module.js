@@ -100,35 +100,31 @@ initModule.factory('CSRFNonceInterceptor', ($injector, $q) => {
   var token = false;
 
   function requestToken() {
-      return $injector.get('$http')({
-        method:"OPTIONS",
-        url: "/api",
-        headers: {
-          'X-CSRF-Token': 'fetch'
-        }
-      }).then((resp) => token = resp.headers('X-CSRF-Token'));
+    return $injector.get('$http')({
+      method:"OPTIONS",
+      url: "/api",
+      headers: {
+        'X-CSRF-Token': 'fetch'
+      }
+    }).then((resp) => token = resp.headers('X-CSRF-Token'));
     }
 
   return {
-      request: function(config) {
-        if (config.url.indexOf("/api/") === -1) {
-            return config || $q.when(config);
-          }
-
-
-          return $q.when(token || requestToken())
-                   .then((token) => {
-                   config.headers['X-CSRF-Token'] = token;
-                   return config;
-                 })
-    },
-
-      responseError: (rejection) => {
-        if (rejection && rejection.config.url.indexOf("/ext/") !== -1) {
-            delete tokens[getWorkspaceId(rejection.config.url)];
-          }
-        return $q.reject(rejection);
+    request: function(config) {
+      if (config.url.indexOf("/api/") === -1) {
+          return config || $q.when(config);
       }
+      var method =  config.method.toUpperCase();
+      if (method === "GET" || method === "OPTIONS" || method === "HEAD") {
+        return config || $q.when(config);
+      }
+
+      return $q.when(token || requestToken())
+               .then((token) => {
+               config.headers['X-CSRF-Token'] = token;
+               return config;
+             })
+    }
   }
 });
 
