@@ -97,7 +97,7 @@ initModule.factory('AuthInterceptor', ($window, $cookies, $q, $location, $log) =
 });
 
 initModule.factory('CSRFNonceInterceptor', ($injector, $q) => {
-  var token = false;
+  var token;
 
   function requestToken() {
     return $injector.get('$http')({
