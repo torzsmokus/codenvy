@@ -35,18 +35,22 @@ public class AuthorizeTokenHttpJsonRequestFactory extends DefaultHttpJsonRequest
 
     private final String userToken;
 
+    private final String csrfToken;
+
     @Inject
-    public AuthorizeTokenHttpJsonRequestFactory(@Named("user.token") String token) {
-        userToken = token;
+    public AuthorizeTokenHttpJsonRequestFactory(@Named("user.token") String userToken,
+                                                @Named("csrf.token") String csrfToken) {
+        this.userToken = userToken;
+        this.csrfToken = csrfToken;
     }
 
     @Override
     public HttpJsonRequest fromUrl(@NotNull String url) {
-        return super.fromUrl(url).setAuthorizationHeader(userToken);
+        return super.fromUrl(url).setAuthorizationHeader(userToken).setCsrfTokenHeader(csrfToken);
     }
 
     @Override
     public HttpJsonRequest fromLink(@NotNull Link link) {
-        return super.fromLink(link).setAuthorizationHeader(userToken);
+        return super.fromLink(link).setAuthorizationHeader(userToken).setCsrfTokenHeader(csrfToken);
     }
 }
