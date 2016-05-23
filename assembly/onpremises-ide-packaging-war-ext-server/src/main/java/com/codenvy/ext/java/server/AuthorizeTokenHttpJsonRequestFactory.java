@@ -24,7 +24,7 @@ import javax.inject.Singleton;
 import javax.validation.constraints.NotNull;
 
 /**
- * Extends {@link DefaultHttpJsonRequestFactory} and aware about user's authorization token.
+ * Extends {@link DefaultHttpJsonRequestFactory} and aware about user's authorization and CSRF token.
  * <p>Used for the purpose of sending authorized requests from WS-agent to the WS-master.
  *
  * @author Artem Zatsarynnyi
@@ -35,22 +35,26 @@ public class AuthorizeTokenHttpJsonRequestFactory extends DefaultHttpJsonRequest
 
     private final String userToken;
 
-    private final String csrfToken;
+    private final CsrfTokenPair csrfTokenPair;
 
     @Inject
     public AuthorizeTokenHttpJsonRequestFactory(@Named("user.token") String userToken,
-                                                @Named("csrf.token") String csrfToken) {
+                                                @Named("csrf.token") CsrfTokenPair csrfToken) {
         this.userToken = userToken;
-        this.csrfToken = csrfToken;
+        this.csrfTokenPair = csrfToken;
     }
 
     @Override
     public HttpJsonRequest fromUrl(@NotNull String url) {
-        return super.fromUrl(url).setAuthorizationHeader(userToken).setCsrfTokenHeader(csrfToken);
+        return super.fromUrl(url).setAuthorizationHeader(userToken)
+                                 .setCsrfTokenHeader(csrfTokenPair.getCsrfToken())
+                                 .setSessionId(csrfTokenPair.getSessionId());
     }
 
     @Override
     public HttpJsonRequest fromLink(@NotNull Link link) {
-        return super.fromLink(link).setAuthorizationHeader(userToken).setCsrfTokenHeader(csrfToken);
+        return super.fromLink(link).setAuthorizationHeader(userToken)
+                                   .setCsrfTokenHeader(csrfTokenPair.getCsrfToken())
+                                   .setSessionId(csrfTokenPair.getSessionId());
     }
 }

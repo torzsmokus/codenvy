@@ -91,7 +91,7 @@ public class MachineModule extends AbstractModule {
 
         bind(String.class).annotatedWith(Names.named("api.endpoint")).toProvider(ApiEndpointProvider.class);
         bind(String.class).annotatedWith(Names.named("user.token")).toProvider(UserTokenProvider.class);
-        bind(String.class).annotatedWith(Names.named("csrf.token")).toProvider(CsrfNonceProvider.class);
+        bind(CsrfTokenPair.class).annotatedWith(Names.named("csrf.token")).toProvider(CsrfTokenProvider.class);
 
         bind(SSOContextResolver.class).to(com.codenvy.auth.sso.client.EnvironmentContextResolver.class);
 

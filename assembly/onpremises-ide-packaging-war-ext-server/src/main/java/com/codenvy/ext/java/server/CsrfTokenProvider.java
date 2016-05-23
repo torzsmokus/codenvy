@@ -21,44 +21,58 @@ import org.slf4j.LoggerFactory;
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.inject.Provider;
+import javax.ws.rs.core.HttpHeaders;
 import java.io.IOException;
+import java.net.HttpCookie;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.List;
+import java.util.Map;
 
 /**
+ * Retrieves csrf token and related session id from wsmaster.
+ *
  * @author Max Shaposhnik
  */
-public class CsrfNonceProvider implements Provider<String> {
+public class CsrfTokenProvider implements Provider<CsrfTokenPair> {
 
-    private static final Logger LOG = LoggerFactory.getLogger(CsrfNonceProvider.class);
+    private static final Logger LOG = LoggerFactory.getLogger(CsrfTokenProvider.class);
 
-    private String csrfToken;
+    private CsrfTokenPair csrfTokenPair;
 
     private final String apiEndpoint;
 
     @Inject
-    public CsrfNonceProvider(@Named("api.endpoint") String apiEndpoint) {
+    public CsrfTokenProvider(@Named("api.endpoint") String apiEndpoint) {
         this.apiEndpoint = apiEndpoint.endsWith("/") ? apiEndpoint : apiEndpoint + "/";
     }
 
     @Override
-    public String get() {
-        if (csrfToken != null) {
-            return csrfToken;
+    public CsrfTokenPair get() {
+        if (csrfTokenPair != null) {
+            return csrfTokenPair;
         } else {
             HttpURLConnection http = null;
             try {
                 http = (HttpURLConnection)new URL(apiEndpoint).openConnection();
                 http.setRequestMethod("OPTIONS");
                 http.setRequestProperty("X-CSRF-Token", "fetch");
-                int responseCode = http.getResponseCode();
+                final int responseCode = http.getResponseCode();
                 if (responseCode != HttpURLConnection.HTTP_OK) {
-                    LOG.warn("Can not receive csrf token by path: {}. Response status: {}. Error message: {}",
+                    LOG.warn("Can not retrieve csrf token by path: {}. Response status: {}. Error message: {}",
                              apiEndpoint.toString(), responseCode, IoUtil.readStream(http.getErrorStream()));
                     return null;
                 }
-                csrfToken = http.getRequestProperty("X-CSRF-Token");
-                return csrfToken;
+                final String token = http.getHeaderField("X-CSRF-Token");
+                final String cookiesHeader = http.getHeaderField(HttpHeaders.SET_COOKIE);
+                if (token != null && cookiesHeader != null) {
+                    for (HttpCookie cookie : HttpCookie.parse(cookiesHeader)) {
+                        if (cookie.getName().equals("JSESSIONID")) {
+                            csrfTokenPair = new CsrfTokenPair(token, cookie.getValue());
+                            return csrfTokenPair;
+                        }
+                    }
+                }
             } catch (IOException e) {
                 LOG.warn(e.getLocalizedMessage(), e);
             } finally {
