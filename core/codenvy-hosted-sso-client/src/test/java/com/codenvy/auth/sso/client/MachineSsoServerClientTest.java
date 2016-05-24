@@ -88,14 +88,14 @@ public class MachineSsoServerClientTest {
 
     @Test
     public void getUserMustDelegateCallToTheSuperWhenTokenIsNotPrefixedWithMachine() throws NotFoundException {
-        ssoClient.getSubject("123456789", "client", "workspace123", "accountId");
+        ssoClient.getSubject("123456789", "client");
 
         verify(registrySpy, never()).getUserId(any());
     }
 
     @Test
     public void getUserMustReturnNullWhenTokenIsMachinePrefixedButUserForSuchTokenDoesNotExist() throws NotFoundException {
-        final Subject user = ssoClient.getSubject("machine123456789", "client", "workspace123", "accountId");
+        final Subject user = ssoClient.getSubject("machine123456789", "client");
 
         assertNull(user);
         verify(registrySpy).getUserId("machine123456789");
@@ -116,7 +116,7 @@ public class MachineSsoServerClientTest {
                                                        new SubjectImpl("user", "user123", "master_token", singleton("user")),
                                                        "auth_type"));
 
-        final Subject sessionUser = ssoClient.getSubject(token, "client", "workspace123", "accountId");
+        final Subject sessionUser = ssoClient.getSubject(token, "client");
 
         assertNotNull(sessionUser);
         assertEquals(sessionUser.getUserName(), user.getName());
