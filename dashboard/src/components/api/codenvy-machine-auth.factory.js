@@ -32,8 +32,8 @@ export class CodenvyMachineAuth {
 
          requestToken(workspaceId) {
            let promise = this.tokenApi.getByWorkspace({workspaceId: workspaceId}).$promise;
-           promise.then((machineToken) => {
-             this.tokens.set(workspaceId, machineToken.machineToken);
+           promise.then((token) => {
+             this.tokens.set(workspaceId, token.machineToken);
            });
          }
 

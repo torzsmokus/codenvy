@@ -140,7 +140,7 @@ initModule.factory('AuthInterceptor', ($window, $cookies, $q, $location, $log) =
 //});
 //
 initModule.config(['$routeProvider', '$locationProvider', '$httpProvider', ($routeProvider, $locationProvider, $httpProvider) => {
-//  $httpProvider.interceptors.push('AddMachineTokenToUrlInterceptor')
+  $httpProvider.interceptors.push('codenvyMachineAuth')
   if (DEV) {
     console.log('adding auth interceptor');
     $httpProvider.interceptors.push('AuthInterceptor');
