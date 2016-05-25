@@ -20,15 +20,21 @@ export class CodenvyMachineAuth {
           * Default constructor that is using resource
           * @ngInject for Dependency injection
           */
-         constructor($injector, $q) {
-           this.$injector = $window;
+         constructor($resource, $q) {
+           this.$resource = $resource;
            this.$q = $q;
-           this.tokens = [];
+           this.tokens = new Map();
+
+           this.tokenApi = this.$resource('/api/machine/token', {}, {
+             getByWorkspace: {method: 'GET', url: '/api/machine/token/:workspaceId'}
+           })
          }
 
          requestToken(workspaceId) {
-           return this.$injector.get('$http').get('/api/machine/token/' + workspaceId)
-           .then((resp) => this.tokens[workspaceId] = resp.data.machineToken);
+           let promise = this.tokenApi.getByWorkspace({workspaceId: workspaceId}).$promise;
+           promise.then((machineToken) => {
+             this.tokens.set(workspaceId, machineToken.machineToken);
+           });
          }
 
          getWorkspaceId(url) {
@@ -50,7 +56,7 @@ export class CodenvyMachineAuth {
              return config || this.$q.when(config);
            }
 
-           return $q.when(this.tokens[workspaceId] || requestToken(workspaceId))
+           return $q.when(this.tokens.get(workspaceId) || requestToken(workspaceId))
              .then((token) => {
              config.headers['Authorization'] = token;
            return config;
@@ -59,7 +65,7 @@ export class CodenvyMachineAuth {
 
          responseError(rejection) {
            if (rejection && rejection.config.url.indexOf("/ext/") !== -1) {
-             delete tokens[getWorkspaceId(rejection.config.url)];
+             this.tokens.delete(getWorkspaceId(rejection.config.url));
            }
            return this.$q.reject(rejection);
          }
