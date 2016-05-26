@@ -31,10 +31,16 @@ export class CodenvyMachineAuth {
          }
 
          requestToken(workspaceId) {
+           let deferred = this.$q.defer();
            let promise = this.tokenApi.getByWorkspace({workspaceId: workspaceId}).$promise;
            promise.then((token) => {
              this.tokens.set(workspaceId, token.machineToken);
-           });
+             deferred.resolve(token.machineToken);
+           }, (error) => {
+              deffered.reject(error);
+          });
+
+           return deferred.promise;
          }
 
          getWorkspaceId(url) {
