@@ -19,10 +19,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.notification.EventService;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
-import org.mockito.Mock;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.mockito.testng.MockitoTestNGListener;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
@@ -33,29 +30,22 @@ import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.ldap.InitialLdapContext;
-import java.util.ArrayList;
 
 import static java.util.Collections.singletonList;
 import static org.mockito.Mockito.spy;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertNotNull;
 import static org.testng.Assert.assertNull;
 import static org.testng.Assert.fail;
 
-@Listeners(value = {MockitoTestNGListener.class})
-public class UserDaoTest extends BaseTest {
+@Listeners({MockitoTestNGListener.class})
+public class LdapUserDaoTest extends BaseTest {
 
-    @Mock
-    UserProfileDao profileDao;
-    @Mock
-    PreferenceDao  preferenceDao;
-
-    UserDaoImpl               userDao;
+    LdapUserDao               userDao;
     InitialLdapContextFactory factory;
     UserAttributesMapper      mapper;
-    User[]                    users;
+    UserImpl[]                users;
 
     @BeforeMethod
     public void setUp() throws Exception {
@@ -69,33 +59,19 @@ public class UserDaoTest extends BaseTest {
                                                     null,
                                                     null));
         mapper = spy(new UserAttributesMapper());
-        userDao = new UserDaoImpl(profileDao,
-                                  preferenceDao,
-                                  factory,
+        userDao = new LdapUserDao(factory,
                                   "dc=codenvy;dc=com",
                                   "uid",
                                   "cn",
                                   mapper,
                                   new EventService());
 
-        users = new User[]{
-                new User().withId("1")
-                          .withEmail("user1@mail.com")
-                          .withName("user1")
-                          .withPassword("secret")
-                          .withAliases(singletonList("user1@mail.com")),
-                new User().withId("2")
-                          .withName("user2")
-                          .withEmail("user2@mail.com")
-                          .withPassword("secret")
-                          .withAliases(singletonList("user2@mail.com")),
-                new User().withId("3")
-                          .withName("user3")
-                          .withEmail("user3@mail.com")
-                          .withPassword("secret")
-                          .withAliases(singletonList("user3@mail.com"))
+        users = new UserImpl[] {
+                new UserImpl("1", "user1@mail.com", "user1", "secret", singletonList("user1@mail.com")),
+                new UserImpl("2", "user2@mail.com", "user2", "secret", singletonList("user2@mail.com")),
+                new UserImpl("3", "user3@mail.com", "user3", "secret", singletonList("user3@mail.com"))
         };
-        for (User user : users) {
+        for (UserImpl user : users) {
             userDao.create(user);
         }
     }
@@ -149,48 +125,13 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldCreateUser() throws Exception {
-        final User newUser = new User().withId("user123")
-                                       .withName("user123_name")
-                                       .withEmail("user123@mail.com")
-                                       .withPassword("password");
+        final UserImpl newUser = new UserImpl("user123", "user123@mail.com", "user123_name", "password", null);
 
         userDao.create(newUser);
 
-        final User result = userDao.getById("user123");
+        final UserImpl result = userDao.getById("user123");
         assertEquals(result.getId(), newUser.getId());
         assertEquals(result.getName(), newUser.getName());
-        assertEquals(result.getEmail(), newUser.getEmail());
-        assertEquals(result.getAliases(), singletonList(newUser.getEmail()));
-        assertNull(result.getPassword());
-    }
-
-    @Test
-    public void shouldUseUserNameAsEmailAndAliasWhenCreatingUser() throws Exception {
-        final User newUser = new User().withId("user123")
-                                       .withName("user123_name")
-                                       .withPassword("password");
-
-        userDao.create(newUser);
-
-        final User result = userDao.getById("user123");
-        assertEquals(result.getId(), newUser.getId());
-        assertEquals(result.getName(), newUser.getName());
-        assertEquals(result.getEmail(), newUser.getName());
-        assertEquals(result.getAliases(), singletonList(newUser.getEmail()));
-        assertNull(result.getPassword());
-    }
-
-    @Test
-    public void shouldUseUserIdWhenUserNameIsNullWhenCreatingUser() throws Exception {
-        final User newUser = new User().withId("user123")
-                                       .withName("user123")
-                                       .withPassword("password");
-
-        userDao.create(newUser);
-
-        final User result = userDao.getByAlias("user123");
-        assertEquals(result.getId(), newUser.getId());
-        assertEquals(result.getName(), newUser.getId());
         assertEquals(result.getEmail(), newUser.getEmail());
         assertEquals(result.getAliases(), singletonList(newUser.getEmail()));
         assertNull(result.getPassword());
@@ -199,19 +140,22 @@ public class UserDaoTest extends BaseTest {
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "Unable create new user .*. User already exists")
     public void shouldThrowConflictExceptionWhenCreatingUserWithReservedId() throws Exception {
-        userDao.create(doClone(users[0]).withEmail("example@mail.com")
-                                        .withName("new_name")
-                                        .withAliases(singletonList("example@mail.com"))
-                                        .withPassword("new password"));
+        final UserImpl newUser = new UserImpl(users[0]);
+        newUser.setEmail("example@mail.com");
+        newUser.setName("new_name");
+        newUser.setAliases(singletonList("example@mail.com"));
+        newUser.setPassword("new password");
+
+        userDao.create(newUser);
     }
 
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "User with alias .* already exists")
     public void shouldThrowConflictExceptionWhenCreatingUserWithReservedAlias() throws Exception {
-        final User copy = doClone(users[0]).withName("new_name")
-                                           .withId("new_id")
-                                           .withEmail("example@mail.com")
-                                           .withPassword("new_secret");
+        final UserImpl copy = new UserImpl(users[0]);
+        copy.setName("new_name");
+        copy.setEmail("example@mail.com");
+        copy.setPassword("new_secret");
         copy.getAliases().add("example@mail.com");
 
         userDao.create(copy);
@@ -220,10 +164,12 @@ public class UserDaoTest extends BaseTest {
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "User with name .* already exists")
     public void shouldThrowConflictExceptionWhenCreatingUserWithReservedName() throws Exception {
-        userDao.create(doClone(users[0]).withId("new_id")
-                                        .withEmail("example@mail.com")
-                                        .withAliases(singletonList("example@mail.com"))
-                                        .withPassword("new password"));
+        final UserImpl copy = new UserImpl(users[0]);
+        copy.setEmail("example@mail.com");
+        copy.setAliases(singletonList("example@mail.com"));
+        copy.setPassword("new password");
+
+        userDao.create(copy);
     }
 
     @Test(expectedExceptions = ConflictException.class,
@@ -237,13 +183,8 @@ public class UserDaoTest extends BaseTest {
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "User with email .* already exists")
     public void shouldThrowConflictExceptionWhenCreatingTwoUsersWithSameEmails() throws Exception {
-        userDao.create(new User().withId("id_1")
-                                 .withEmail("example@mail.com")
-                                 .withPassword("password"));
-        userDao.create(new User().withId("id_2")
-                                 .withEmail("example@mail.com")
-                                 .withPassword("password"));
-
+        userDao.create(new UserImpl("id_1", "example@mail.com", "name1", "password", null));
+        userDao.create(new UserImpl("id_2", "example@mail.com", "name2", "password", null));
     }
 
     @Test(expectedExceptions = ServerException.class)
@@ -255,7 +196,7 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldUpdateUser() throws Exception {
-        final User copy = doClone(users[0]);
+        final UserImpl copy = new UserImpl(users[0]);
         copy.setEmail("example@mail.com");
         copy.setName("new_name");
         copy.setPassword("new_secret");
@@ -263,7 +204,7 @@ public class UserDaoTest extends BaseTest {
 
         userDao.update(copy);
 
-        final User updated = userDao.getById(copy.getId());
+        final UserImpl updated = userDao.getById(copy.getId());
         assertEquals(updated.getId(), copy.getId());
         assertEquals(updated.getName(), copy.getName());
         assertEquals(updated.getEmail(), copy.getEmail());
@@ -273,16 +214,13 @@ public class UserDaoTest extends BaseTest {
 
     @Test(expectedExceptions = NotFoundException.class)
     public void shouldThrowNotFoundExceptionWhenUpdatingNotExistingUser() throws Exception {
-        userDao.update(doClone(users[0]).withId("invalid")
-                                        .withName("new-name")
-                                        .withEmail("new_email@mail.com")
-                                        .withPassword("new secret"));
+        userDao.update(new UserImpl("non-existing-id"));
     }
 
     @Test(expectedExceptions = ConflictException.class,
           expectedExceptionsMessageRegExp = "Unable update user .*, alias .* is already in use")
     public void shouldThrowConflictExceptionWhenUpdatingUserWithAliasWhichIsReserved() throws Exception {
-        final User copy = doClone(users[0]);
+        final UserImpl copy = new UserImpl(users[0]);
         copy.setEmail("example@mail.com");
         copy.setPassword("new_secret");
         final String conflictAlias = users[1].getAliases().get(0);
@@ -293,11 +231,14 @@ public class UserDaoTest extends BaseTest {
     }
 
     @Test(expectedExceptions = ConflictException.class,
-          expectedExceptionsMessageRegExp = "Unable update user .*, name .* is already in use")
+          expectedExceptionsMessageRegExp = "Unable update user '.*', name '.*' already in use")
     public void shouldThrowConflictExceptionWhenUpdatingUserWithNameWhichIsReserved() throws Exception {
-        userDao.update(doClone(users[0]).withEmail("new-email@mail.com")
-                                        .withPassword("new secret")
-                                        .withName(users[1].getName()));
+        final UserImpl user = new UserImpl(users[0]);
+        user.setEmail("new-email@mail.com");
+        user.setName(users[1].getName());
+        user.setPassword("new secret");
+
+        userDao.update(user);
     }
 
     @Test(expectedExceptions = ServerException.class)
@@ -309,7 +250,7 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldBeAbleToGetUserByAlias() throws Exception {
-        final User user = userDao.getByAlias(users[2].getAliases().get(0));
+        final UserImpl user = userDao.getByAlias(users[2].getAliases().get(0));
 
         assertEquals(user.getId(), users[2].getId());
         assertEquals(user.getEmail(), users[2].getEmail());
@@ -320,7 +261,7 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldBeAbleToGetUserByName() throws Exception {
-        final User user = userDao.getByName(users[2].getName());
+        final UserImpl user = userDao.getByName(users[2].getName());
 
         assertEquals(user.getId(), users[2].getId());
         assertEquals(user.getEmail(), users[2].getEmail());
@@ -343,7 +284,7 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldBeAbleToGetUserById() throws Exception {
-        final User user = userDao.getById(users[1].getId());
+        final UserImpl user = userDao.getById(users[1].getId());
 
         assertEquals(user.getId(), users[1].getId());
         assertEquals(user.getEmail(), users[1].getEmail());
@@ -354,9 +295,7 @@ public class UserDaoTest extends BaseTest {
 
     @Test
     public void shouldRenameEntityWhenItIsNotFoundWithNewDn() throws Exception {
-        final Attributes attributes = mapper.toAttributes(new User().withId("user123")
-                                                                    .withName("user123")
-                                                                    .withPassword("password"));
+        final Attributes attributes = mapper.toAttributes(new UserImpl("user123", "user123@mail.com", "user123", "password", null));
         InitialLdapContext context = factory.createContext();
         context.createSubcontext("cn=user123,dc=codenvy;dc=com", attributes);
 
@@ -381,38 +320,5 @@ public class UserDaoTest extends BaseTest {
         when(factory.createContext()).thenThrow(new NamingException());
 
         userDao.getById("valid");
-    }
-
-    @Test
-    public void shouldRemoveUserAndAllDependentEntries() throws Exception {
-        //given
-        //prepare user
-        final User testUser = users[0];
-
-        //when
-        userDao.remove(testUser.getId());
-
-        //then
-        try {
-            userDao.getById(testUser.getId());
-            fail("User was not removed");
-        } catch (NotFoundException ignored) {
-            //user was removed successfully
-        }
-        verify(profileDao).remove(testUser.getId());
-        verify(preferenceDao).remove(testUser.getId());
-    }
-
-    @Test(expectedExceptions = NotFoundException.class)
-    public void shouldThrowNotFoundExceptionWhenUserDoesNotExist() throws Exception {
-        userDao.remove("invalid");
-    }
-
-    private User doClone(User other) {
-        return new User().withId(other.getId())
-                         .withName(other.getName())
-                         .withEmail(other.getEmail())
-                         .withPassword(other.getPassword())
-                         .withAliases(new ArrayList<>(other.getAliases()));
     }
 }

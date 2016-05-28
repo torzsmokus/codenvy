@@ -19,9 +19,9 @@ import com.codenvy.api.dao.ldap.InitialLdapContextFactory;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.user.server.PreferencesManager;
+import org.eclipse.che.api.user.server.UserManager;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.commons.subject.SubjectImpl;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -57,9 +57,9 @@ import static org.testng.Assert.assertTrue;
 public class OrgServiceRolesExtractorTest {
 
     @Mock
-    UserDao                  userDao;
+    UserManager              userManager;
     @Mock
-    PreferenceDao            preferenceDao;
+    PreferencesManager       preferencesManager;
     @InjectMocks
     OrgServiceRolesExtractor extractor;
 
@@ -75,12 +75,12 @@ public class OrgServiceRolesExtractorTest {
 
         ticket = new AccessTicket("token", user, "authHandler");
 
-        when(userDao.getById(user.getUserId())).thenReturn(new User().withId("id"));
+        when(userManager.getById(user.getUserId())).thenReturn(new UserImpl("id"));
     }
 
     @Test
     public void shouldSkipLdapRoleCheckWhenAllowedRoleIsNull() throws Exception {
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferenceDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,
@@ -94,9 +94,9 @@ public class OrgServiceRolesExtractorTest {
 
     @Test
     public void shouldReturnEmptySetWhenLdapRolesDoNotContainAllowedRole() throws Exception {
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(//userDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(//userManager,
                                                                                     //accountDao,
-                                                                                    preferenceDao,
+                                                                                    preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,
@@ -111,9 +111,9 @@ public class OrgServiceRolesExtractorTest {
     @Test
     public void shouldReturnNormalUserRolesWhenLdapRolesContainAllowedRole() throws Exception {
         final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(
-                //userDao,
+                //userManager,
                 //accountDao,
-                preferenceDao,
+                preferencesManager,
                 null,
                 null,
                 null,
@@ -127,14 +127,14 @@ public class OrgServiceRolesExtractorTest {
 
     @Test
     public void shouldReturnTempUserRoleWhenPreferencesContainTemporaryAttribute() throws Exception {
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferenceDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,
                                                                                     "employeeType",
                                                                                     null,
                                                                                     null));
-        when(preferenceDao.getPreferences(ticket.getPrincipal().getUserId())).thenReturn(singletonMap("temporary", "true"));
+        when(preferencesManager.find(ticket.getPrincipal().getUserId())).thenReturn(singletonMap("temporary", "true"));
         doReturn(Collections.<String>emptySet()).when(extractor).getRoles(ticket.getPrincipal().getUserId());
 
         assertEquals(extractor.extractRoles(ticket), singleton("temp_user"));
@@ -142,7 +142,7 @@ public class OrgServiceRolesExtractorTest {
 
     @Test
     public void shouldReturnWorkspaceRolesWithUserRoleWhenUserHasAccessToWorkspace() throws Exception {
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferenceDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,
@@ -156,7 +156,7 @@ public class OrgServiceRolesExtractorTest {
 
     @Test(enabled = false)
     public void shouldReturnEmptySetWhenUserDoesNotExist() throws Exception {
-        when(userDao.getById(ticket.getPrincipal().getUserId())).thenThrow(new NotFoundException("fake"));
+        when(userManager.getById(ticket.getPrincipal().getUserId())).thenThrow(new NotFoundException("fake"));
 
         assertTrue(extractor.extractRoles(ticket).isEmpty());
     }
@@ -164,7 +164,7 @@ public class OrgServiceRolesExtractorTest {
     @Test(expectedExceptions = RuntimeException.class,
           expectedExceptionsMessageRegExp = "fake", enabled = false)
     public void shouldRethrowServerExceptionAsRuntimeException() throws Exception {
-        when(userDao.getById(ticket.getPrincipal().getUserId())).thenThrow(new ServerException("fake"));
+        when(userManager.getById(ticket.getPrincipal().getUserId())).thenThrow(new ServerException("fake"));
 
         extractor.extractRoles(ticket);
     }
@@ -178,7 +178,7 @@ public class OrgServiceRolesExtractorTest {
 
     @Test
     public void shouldReturnSystemAdminAndManagerRolesIfGetRolesMethodReturnsIt() throws Exception {
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferenceDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,
@@ -204,7 +204,7 @@ public class OrgServiceRolesExtractorTest {
         final InitialLdapContextFactory contextFactory = mock(InitialLdapContextFactory.class);
         when(contextFactory.createContext()).thenReturn(contextMock);
 
-        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferenceDao,
+        final OrgServiceRolesExtractor extractor = spy(new OrgServiceRolesExtractor(preferencesManager,
                                                                                     null,
                                                                                     null,
                                                                                     null,

@@ -17,7 +17,7 @@ package com.codenvy.api.dao.ldap;
 import com.codenvy.api.dao.authentication.PasswordEncryptor;
 import com.codenvy.api.dao.authentication.SSHAPasswordEncryptor;
 
-import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -128,11 +128,10 @@ public class UserAttributesMapper {
     /**
      * Restores instance of {@code User} from LDAP {@code Attributes}.
      */
-    public User fromAttributes(Attributes attributes) throws NamingException {
-        final User user = new User();
-        user.setId(attributes.get(userIdAttr).get().toString());
-        user.setName(attributes.get(userNameAttr).get().toString());
-        user.setEmail(attributes.get(userEmailAttr).get().toString());
+    public UserImpl fromAttributes(Attributes attributes) throws NamingException {
+        final UserImpl user = new UserImpl(attributes.get(userIdAttr).get().toString(),
+                                           attributes.get(userEmailAttr).get().toString(),
+                                           attributes.get(userNameAttr).get().toString());
         final NamingEnumeration enumeration = attributes.get(userAliasesAttr).getAll();
         final List<String> aliases = new LinkedList<>();
         try {
@@ -150,7 +149,7 @@ public class UserAttributesMapper {
     /**
      * Converts {@code User} instance to LDAP {@code Attributes}.
      */
-    public Attributes toAttributes(User user) throws NamingException {
+    public Attributes toAttributes(UserImpl user) throws NamingException {
         final Attributes attributes = new BasicAttributes();
         final Attribute objectClassAttr = new BasicAttribute("objectClass");
         for (String oc : userObjectClasses) {
@@ -187,7 +186,7 @@ public class UserAttributesMapper {
     /**
      * Compares two {@code User} objects and provides diff of {@code ModificationItem[]} form.
      */
-    public ModificationItem[] createModifications(User src, User dest) throws NamingException {
+    public ModificationItem[] createModifications(UserImpl src, UserImpl dest) throws NamingException {
         final List<ModificationItem> mods = new ArrayList<>();
 
         // create modification for email if necessary

@@ -17,7 +17,8 @@ package com.codenvy.workspace.interceptor;
 import com.codenvy.user.interceptor.CreateUserInterceptor;
 import com.google.inject.AbstractModule;
 
-import org.eclipse.che.api.user.server.dao.UserDao;
+
+import org.eclipse.che.api.user.server.spi.UserDao;
 
 import static com.google.inject.matcher.Matchers.subclassesOf;
 import static org.eclipse.che.inject.Matchers.names;

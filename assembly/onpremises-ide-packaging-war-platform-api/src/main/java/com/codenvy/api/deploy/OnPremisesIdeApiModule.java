@@ -17,11 +17,11 @@ package com.codenvy.api.deploy;
 import com.codenvy.api.dao.authentication.PasswordEncryptor;
 import com.codenvy.api.dao.authentication.SSHAPasswordEncryptor;
 import com.codenvy.api.dao.ldap.AdminUserDaoImpl;
-import com.codenvy.api.dao.ldap.UserDaoImpl;
+import com.codenvy.api.dao.ldap.LdapProfileDao;
+import com.codenvy.api.dao.ldap.LdapUserDao;
 import com.codenvy.api.dao.mongo.MachineMongoDatabaseProvider;
 import com.codenvy.api.dao.mongo.OrganizationMongoDatabaseProvider;
 import com.codenvy.api.dao.mongo.WorkspaceDaoImpl;
-import com.codenvy.api.dao.util.ProfileMigrator;
 import com.codenvy.api.factory.FactoryMongoDatabaseProvider;
 import com.codenvy.api.permission.server.PermissionChecker;
 import com.codenvy.api.user.server.AdminUserService;
@@ -71,12 +71,13 @@ import org.eclipse.che.api.project.server.template.ProjectTemplateDescriptionLoa
 import org.eclipse.che.api.project.server.template.ProjectTemplateRegistry;
 import org.eclipse.che.api.project.server.template.ProjectTemplateService;
 import org.eclipse.che.api.ssh.server.spi.SshDao;
+import org.eclipse.che.api.user.server.PreferencesService;
+import org.eclipse.che.api.user.server.ProfileService;
 import org.eclipse.che.api.user.server.TokenValidator;
-import org.eclipse.che.api.user.server.UserProfileService;
 import org.eclipse.che.api.user.server.UserService;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.UserDao;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
+import org.eclipse.che.api.user.server.spi.PreferenceDao;
+import org.eclipse.che.api.user.server.spi.ProfileDao;
+import org.eclipse.che.api.user.server.spi.UserDao;
 import org.eclipse.che.api.workspace.server.WorkspaceManager;
 import org.eclipse.che.api.workspace.server.WorkspaceService;
 import org.eclipse.che.api.workspace.server.WorkspaceServiceLinksInjector;
@@ -118,7 +119,8 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(WorkspaceService.class);
         bind(UserService.class);
         bind(AdminUserService.class);
-        bind(UserProfileService.class);
+        bind(ProfileService.class);
+        bind(PreferencesService.class);
 
         //recipe service
         bind(RecipeService.class);
@@ -173,9 +175,9 @@ public class OnPremisesIdeApiModule extends AbstractModule {
         bind(PasswordEncryptor.class).toInstance(new SSHAPasswordEncryptor());
 
         bind(WorkspaceDao.class).to(WorkspaceDaoImpl.class);
-        bind(UserDao.class).to(UserDaoImpl.class);
+        bind(UserDao.class).to(LdapUserDao.class);
+        bind(ProfileDao.class).to(LdapProfileDao.class);
         bind(AdminUserDao.class).to(AdminUserDaoImpl.class);
-        bind(UserProfileDao.class).to(com.codenvy.api.dao.ldap.UserProfileDaoImpl.class);
         bind(PreferenceDao.class).to(com.codenvy.api.dao.mongo.PreferenceDaoImpl.class);
         bind(SshDao.class).to(com.codenvy.api.dao.mongo.ssh.SshDaoImpl.class);
         bind(WorkerDao.class).to(com.codenvy.api.dao.mongo.WorkerDaoImpl.class);
@@ -279,8 +281,6 @@ public class OnPremisesIdeApiModule extends AbstractModule {
 
         bind(com.codenvy.service.http.WorkspaceInfoCache.WorkspaceCacheLoader.class)
                 .to(com.codenvy.service.http.WorkspaceInfoCache.ManagerCacheLoader.class);
-
-        bind(ProfileMigrator.class).asEagerSingleton();
 
         install(new com.codenvy.workspace.interceptor.InterceptorModule());
         install(new com.codenvy.auth.sso.server.deploy.SsoServerModule());

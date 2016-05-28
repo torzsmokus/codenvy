@@ -19,7 +19,7 @@ import com.codenvy.auth.sso.server.organization.UserCreationValidator;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.dao.UserDao;
+import org.eclipse.che.api.user.server.UserManager;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -31,13 +31,13 @@ import static com.google.common.base.Strings.isNullOrEmpty;
  */
 public class OrgServiceUserValidator implements UserCreationValidator {
 
-    private final UserDao userDao;
-    private final boolean userSelfCreationAllowed;
+    private final UserManager userManager;
+    private final boolean     userSelfCreationAllowed;
 
     @Inject
-    public OrgServiceUserValidator(UserDao userDao,
+    public OrgServiceUserValidator(UserManager userManager,
                                    @Named("user.self.creation.allowed") boolean userSelfCreationAllowed) {
-        this.userDao = userDao;
+        this.userManager = userManager;
         this.userSelfCreationAllowed = userSelfCreationAllowed;
     }
 
@@ -56,14 +56,14 @@ public class OrgServiceUserValidator implements UserCreationValidator {
         }
 
         try {
-            userDao.getByAlias(email);
+            userManager.getByAlias(email);
             throw new ConflictException("User with given email already exists. Please, choose another one.");
         } catch (NotFoundException e) {
             // ok
         }
 
         try {
-            userDao.getByName(userName);
+            userManager.getByName(userName);
             throw new ConflictException("User with given name already exists. Please, choose another one.");
         } catch (NotFoundException e) {
             // ok

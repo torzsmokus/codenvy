@@ -15,7 +15,7 @@
 package com.codenvy.api.dao.ldap;
 
 import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.user.server.dao.Profile;
+import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.eclipse.che.commons.lang.Pair;
 
 import org.testng.annotations.BeforeMethod;
@@ -32,13 +32,13 @@ import java.util.Map;
 import static org.testng.Assert.assertEquals;
 
 /**
- * Tests for {@link UserProfileDaoImpl}
+ * Tests for {@link LdapProfileDao}
  *
  * @author Eugene Voevodin
  */
-public class UserProfileDaoTest extends BaseTest {
+public class LdapProfileDaoTest extends BaseTest {
 
-    UserProfileDaoImpl profileDao;
+    LdapProfileDao profileDao;
 
     @BeforeMethod
     public void setUp() throws NamingException {
@@ -60,9 +60,10 @@ public class UserProfileDaoTest extends BaseTest {
         final ProfileAttributesMapper mapper = new ProfileAttributesMapper("dc=codenvy;dc=com",
                                                                            "cn",
                                                                            "uid",
+                                                                           "mail",
                                                                            allowedAttributes);
 
-        profileDao = new UserProfileDaoImpl(contextFactory, mapper);
+        profileDao = new LdapProfileDao(contextFactory, mapper);
 
         final Attributes attributes = new BasicAttributes();
         attributes.put(new BasicAttribute("objectClass", "inetOrgPerson"));
@@ -72,15 +73,15 @@ public class UserProfileDaoTest extends BaseTest {
         attributes.put(new BasicAttribute("password", "test password"));
         attributes.put(new BasicAttribute("telephoneNumber", "+380000000000"));
         attributes.put(new BasicAttribute("description", "test description"));
+        attributes.put(new BasicAttribute("mail", "user@codenvy.com"));
         contextFactory.createContext().createSubcontext(mapper.getProfileDn("profile-id"), attributes);
     }
 
     @Test
     public void shouldBeAbleToGetProfileById() throws Exception {
-        final Profile profile = profileDao.getById("profile-id");
+        final ProfileImpl profile = profileDao.getById("profile-id");
 
         assertEquals(profile.getId(), "profile-id");
-        assertEquals(profile.getUserId(), "profile-id");
 
         final Map<String, String> expectedAttributes = new HashMap<>();
         expectedAttributes.put("name", "Test User");
@@ -88,11 +89,12 @@ public class UserProfileDaoTest extends BaseTest {
         expectedAttributes.put("phone", "+380000000000");
 
         assertEquals(profile.getAttributes(), expectedAttributes);
+        assertEquals(profile.getEmail(), "user@codenvy.com");
     }
 
     @Test
     public void shouldBeAbleToUpdateProfileAttributes() throws Exception {
-        final Profile profile = profileDao.getById("profile-id");
+        final ProfileImpl profile = profileDao.getById("profile-id");
         profile.getAttributes().put("name", "new name");
         profile.getAttributes().put("fake", "should not be added");
         profile.getAttributes().put("about", null);
@@ -103,7 +105,9 @@ public class UserProfileDaoTest extends BaseTest {
         expectedAttributes.put("name", "new name");
         expectedAttributes.put("phone", "+380000000000");
 
-        assertEquals(profileDao.getById("profile-id").getAttributes(), expectedAttributes);
+        final ProfileImpl actual = profileDao.getById("profile-id");
+        assertEquals(actual.getAttributes(), expectedAttributes);
+        assertEquals(actual.getEmail(), "user@codenvy.com");
     }
 
     @Test(expectedExceptions = NotFoundException.class,

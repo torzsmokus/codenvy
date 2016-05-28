@@ -29,7 +29,7 @@ import com.codenvy.mail.shared.dto.EmailBeanDto;
 import com.google.common.io.Files;
 
 import org.eclipse.che.api.core.ApiException;
-import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.commons.lang.Deserializer;
 import org.eclipse.che.commons.subject.Subject;
 
