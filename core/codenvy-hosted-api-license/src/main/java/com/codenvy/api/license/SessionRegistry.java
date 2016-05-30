@@ -14,39 +14,35 @@
  */
 package com.codenvy.api.license;
 
-import com.codenvy.api.license.data.SessionDao;
 import com.codenvy.api.license.data.SessionData;
+import com.codenvy.api.license.model.Resource;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.commons.lang.NameGenerator;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * @author gazarenkov
  */
 @Singleton
 public class SessionRegistry {
-
-    private final  Map<String, ActiveSession> activeSessions;
-
-    private final SessionDao sessionDao;
+    private final Map<String, ActiveSession> activeSessions;
+    private final SessionDao                 sessionDao;
 
     @Inject
     public SessionRegistry(SessionDao sessionDao) {
-
         this.activeSessions = new HashMap<>();
         this.sessionDao = sessionDao;
     }
 
     public ActiveSession getActive(String id) throws NotFoundException {
-
         ActiveSession session = activeSessions.get(id);
         if (session == null)
             throw new NotFoundException("Session not found " + id);
@@ -55,47 +51,35 @@ public class SessionRegistry {
     }
 
     public SessionData getStored(String id) throws NotFoundException {
-
         SessionData data = sessionDao.get(id);
-        if (data == null)
+        if (data == null) {
             throw new NotFoundException("Session not found " + id);
-
+        }
         return data;
     }
 
     public ActiveSession add(String user, Set<Resource> resources, License license) throws NotFoundException {
-
-        String id = NameGenerator.generate("", 16);
+        String id = NameGenerator.generate("license", 16);
         ActiveSession session = new ActiveSession(id, user, license, System.currentTimeMillis(), resources);
-
-
         activeSessions.put(id, session);
         license.addSession(session);
         sessionDao.add(session);
-
         return session;
     }
 
     public void remove(String id) {
-
         ActiveSession session = activeSessions.get(id);
-        if (session != null)
+        if (session != null) {
             sessionDao.setStop(id, System.currentTimeMillis(), "setStop");
+        }
         activeSessions.remove(id);
 
     }
 
     public List<ActiveSession> getActiveByType(String licenseType) {
-
-        List<ActiveSession> list = new ArrayList<>();
-
-        for(ActiveSession session : activeSessions.values()) {
-            if(session.getLicense().getType().getId().equals(licenseType))
-                list.add(session);
-        }
-
-        return list;
+        return activeSessions.values()
+                             .stream()
+                             .filter(session -> session.getLicense().getType().getId().equals(licenseType))
+                             .collect(Collectors.toList());
     }
-
-
 }

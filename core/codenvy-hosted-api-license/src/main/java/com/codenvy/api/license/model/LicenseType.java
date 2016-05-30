@@ -12,22 +12,33 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.data;
+package com.codenvy.api.license.model;
 
-import com.codenvy.api.license.ActiveSession;
-
-import org.eclipse.che.api.core.NotFoundException;
+import com.codenvy.api.license.License;
+import com.codenvy.api.license.data.LicenseData;
 
 /**
- * persistence storage
+ * Type of license, describes license and is a factory for license instance
+ *
  * @author gazarenkov
  */
-public interface SessionDao {
+public interface LicenseType {
 
-    SessionData get(String id);
+    /**
+     * @return id
+     */
+    String getId();
 
-    String add(ActiveSession session) throws NotFoundException;
+    /**
+     * @return human readable description
+     */
+    String getDescription();
 
-    void setStop(String id, long time, String reason);
+    /**
+     * factory method for instance creating
+     *
+     * @return
+     */
+    License createInstance(LicenseData licenseData);
 
 }

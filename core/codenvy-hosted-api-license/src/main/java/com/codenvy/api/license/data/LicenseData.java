@@ -18,7 +18,6 @@ package com.codenvy.api.license.data;
  * @author gazarenkov
  */
 public class LicenseData {
-
     private String                  id;
     private String                  type;
     private String                  ownerId;

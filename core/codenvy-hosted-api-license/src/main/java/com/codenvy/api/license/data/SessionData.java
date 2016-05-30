@@ -20,18 +20,15 @@ import java.util.List;
  * @author gazarenkov
  */
 public class SessionData {
-
     private final String             id;
     private final String             userId;
     private final String             licenseId;
     private final long               startTime;
     private final List<ResourceData> resources;
-
-    private long               stopTime;
-    private String stopReason;
+    private       long               stopTime;
+    private       String             stopReason;
 
     public SessionData(String id, String userId, String licenseId, long startTime, List<ResourceData> resources) {
-
         this.id = id;
         this.userId = userId;
         this.licenseId = licenseId;
