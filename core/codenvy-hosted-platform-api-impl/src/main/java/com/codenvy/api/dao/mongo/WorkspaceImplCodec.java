@@ -41,6 +41,8 @@ import org.eclipse.che.api.workspace.server.model.impl.WorkspaceImpl;
 
 import java.util.List;
 
+import static com.codenvy.api.dao.mongo.MongoUtil.asDBList;
+import static com.codenvy.api.dao.mongo.MongoUtil.asStringList;
 import static com.codenvy.api.dao.mongo.MongoUtil.documentsListAsMap;
 import static com.codenvy.api.dao.mongo.MongoUtil.mapAsDocumentsList;
 import static java.util.stream.Collectors.toList;
@@ -241,7 +243,8 @@ public class WorkspaceImplCodec implements Codec<WorkspaceImpl> {
         final MachineConfigImplBuilder builder = MachineConfigImpl.builder()
                                                                   .setDev(document.getBoolean("isDev"))
                                                                   .setName(document.getString("name"))
-                                                                  .setType(document.getString("type"));
+                                                                  .setType(document.getString("type"))
+                                                                  .setMachineLinks(asStringList(document.get("machineLinks")));
         final Document sourceDocument = document.get("source", Document.class);
         if (sourceDocument != null) {
             builder.setSource(new MachineSourceImpl(sourceDocument.getString(MACHINE_SOURCE_TYPE))
@@ -273,7 +276,8 @@ public class WorkspaceImplCodec implements Codec<WorkspaceImpl> {
         final Document document = new Document().append("isDev", config.isDev())
                                                 .append("name", config.getName())
                                                 .append("type", config.getType())
-                                                .append("envVariables", mapAsDocumentsList(config.getEnvVariables()));
+                                                .append("envVariables", mapAsDocumentsList(config.getEnvVariables()))
+                                                .append("machineLinks", asDBList(config.getMachineLinks()));
         final MachineSource source = config.getSource();
         if (source != null) {
             document.append("source", new Document(MACHINE_SOURCE_TYPE, source.getType())
