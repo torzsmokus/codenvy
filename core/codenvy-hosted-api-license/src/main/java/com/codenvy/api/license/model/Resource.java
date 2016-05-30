@@ -12,31 +12,16 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license;
-
-import com.codenvy.api.license.data.LicenseData;
+package com.codenvy.api.license.model;
 
 /**
- * Type of license, describes license and is a factory for license instance
- *
  * @author gazarenkov
  */
-public interface LicenseType {
+public interface Resource {
 
-    /**
-     * @return id
-     */
-    String getId();
+    String getType();
 
-    /**
-     * @return human readable description
-     */
-    String getDescription();
+    int getAmount();
 
-    /**
-     * factory method for instance creating
-     * @return
-     */
-    License createInstance(LicenseData licenseData);
-
+    String getUnit();
 }

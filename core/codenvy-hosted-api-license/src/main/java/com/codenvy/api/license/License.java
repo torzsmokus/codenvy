@@ -15,6 +15,7 @@
 package com.codenvy.api.license;
 
 import com.codenvy.api.license.data.LicenseData;
+import com.codenvy.api.license.model.LicenseType;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -29,21 +30,18 @@ import java.util.Set;
  * @author gazarenkov
  */
 public abstract class License {
-
-    private LicenseData data;
-
-    private LicenseType type;
-
+    private LicenseData                data;
+    private LicenseType                type;
     private Map<String, ActiveSession> sessions;
-
-    private Identity owner;
+    private Identity                   owner;
 
     License(LicenseData data, LicenseType type) {
         this.data = data;
         this.type = type;
         this.sessions = new HashMap<>();
         // todo
-        this.owner = new Identity(data.getType().equalsIgnoreCase("user")?Identity.Type.USER:Identity.Type.ORG, data.getId());
+        this.owner = new Identity(data.getOwnerType().equalsIgnoreCase("user") ? Identity.Type.USER : Identity.Type.ORG,
+                                  data.getId());
     }
 
     public LicenseType getType() {
@@ -51,17 +49,14 @@ public abstract class License {
     }
 
     public Set<ActiveSession> getSessions() {
-
         return new HashSet<>(sessions.values());
     }
 
     public void addSession(ActiveSession session) {
-
         sessions.put(session.getId(), session);
     }
 
     public void removeSession(String sessionId) {
-
         sessions.remove(sessionId);
     }
 
@@ -77,6 +72,4 @@ public abstract class License {
      * @return true if license is still active, false otherwise
      */
     public abstract boolean check();
-
-
 }

@@ -14,14 +14,21 @@
  */
 package com.codenvy.api.license;
 
+import com.codenvy.api.license.data.SessionData;
+
+import org.eclipse.che.api.core.NotFoundException;
+
 /**
+ * Persistence storage
+ *
  * @author gazarenkov
  */
-public interface Resource {
+public interface SessionDao {
 
-    String getType();
+    SessionData get(String id);
 
-    int getAmount();
+    String add(ActiveSession session) throws NotFoundException;
 
-    String getUnit();
+    void setStop(String id, long time, String reason);
+
 }

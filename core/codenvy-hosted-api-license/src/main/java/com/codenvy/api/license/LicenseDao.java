@@ -12,37 +12,46 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.data;
+package com.codenvy.api.license;
+
+import com.codenvy.api.license.data.LicenseData;
 
 /**
+ * Defines data access object contract for {@link LicenseData}.
+ *
  * @author gazarenkov
+ * @author Sergii Lescheni
  */
 public interface LicenseDao {
-
     /**
-     * adds license
-     * @param license
+     * Adds license
      */
-    void add(LicenseData license);
+    void create(LicenseData license);
 
     /**
-     * deletes license by id
+     * Deletes license by id
+     *
      * @param id
+     *         id of license
      */
     void delete(String id);
 
     /**
-     * @param id the id
+     * Returns license by id
+     *
+     * @param id
+     *         the id
      * @return license data
      */
     LicenseData get(String id);
 
     /**
-     * by account
-     * @param license owner Id (account id)
+     * Returns license by owner
+     *
+     * @param owner
+     *         id of owner
      * @return license data
      */
-    LicenseData getByOwner(String licenseeId);
-
-
+    //TODO id of owner is unique for all owners' types or we should add owner type to parameter?
+    LicenseData getByOwner(String owner);
 }
