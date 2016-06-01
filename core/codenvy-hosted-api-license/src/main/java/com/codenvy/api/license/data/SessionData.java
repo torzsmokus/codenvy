@@ -24,11 +24,11 @@ public class SessionData {
     private final String             userId;
     private final String             licenseId;
     private final long               startTime;
-    private final List<ResourceData> resources;
+    private final List<ResourceImpl> resources;
     private       long               stopTime;
     private       String             stopReason;
 
-    public SessionData(String id, String userId, String licenseId, long startTime, List<ResourceData> resources) {
+    public SessionData(String id, String userId, String licenseId, long startTime, List<ResourceImpl> resources) {
         this.id = id;
         this.userId = userId;
         this.licenseId = licenseId;
@@ -56,7 +56,7 @@ public class SessionData {
         return stopTime;
     }
 
-    public List<ResourceData> getResources() {
+    public List<ResourceImpl> getResources() {
         return resources;
     }
 

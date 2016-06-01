@@ -14,22 +14,22 @@
  */
 package com.codenvy.api.license.data;
 
+import com.codenvy.api.license.Identity;
+
 /**
  * @author gazarenkov
  */
 public class LicenseData {
-    private String                  id;
-    private String                  type;
-    private String                  ownerId;
-    private String                  ownerType;
-    private long                    startTime;
-    private long                    endTime;
+    private String   id;
+    private String   typeId;
+    private Identity owner;
+    private long     startTime;
+    private long     endTime;
 
-    public LicenseData(String id, String type, String ownerId, String ownerType, long startTime, long endTime) {
+    public LicenseData(String id, String typeId, Identity owner, long startTime, long endTime) {
         this.id = id;
-        this.type = type;
-        this.ownerId = ownerId;
-        this.ownerType = ownerType;
+        this.typeId = typeId;
+        this.owner = owner;
         this.startTime = startTime;
         this.endTime = endTime;
     }
@@ -38,16 +38,12 @@ public class LicenseData {
         return id;
     }
 
-    public String getType() {
-        return type;
+    public String getTypeId() {
+        return typeId;
     }
 
-    public String getOwnerId() {
-        return ownerId;
-    }
-
-    public String getOwnerType() {
-        return ownerType;
+    public Identity getOwner() {
+        return owner;
     }
 
     public long getStartTime() {
@@ -57,5 +53,4 @@ public class LicenseData {
     public long getEndTime() {
         return endTime;
     }
-
 }

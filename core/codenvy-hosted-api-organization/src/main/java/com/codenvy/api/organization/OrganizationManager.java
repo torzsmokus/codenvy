@@ -23,7 +23,7 @@ import java.util.List;
  */
 public class OrganizationManager {
 
-    public Organization create(String name, License license, String primaryUserId) {
+    public Organization create(String name, License license) {
         return null;
     }
 

@@ -14,17 +14,20 @@
  */
 package com.codenvy.api.license.data;
 
+import com.codenvy.api.license.model.Resource;
+
 /**
  * @author gazarenkov
  */
-public class ResourceData {
-
+public class ResourceImpl implements Resource {
     private final String type;
-    private final int amount;
+    private final int    amount;
+    private final String unit;
 
-    public ResourceData(String type, int amount) {
+    public ResourceImpl(String type, int amount, String unit) {
         this.type = type;
         this.amount = amount;
+        this.unit = unit;
     }
 
     public String getType() {
@@ -33,5 +36,10 @@ public class ResourceData {
 
     public int getAmount() {
         return amount;
+    }
+
+    @Override
+    public String getUnit() {
+        return unit;
     }
 }

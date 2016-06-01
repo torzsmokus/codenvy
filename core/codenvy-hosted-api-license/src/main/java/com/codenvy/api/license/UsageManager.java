@@ -67,9 +67,9 @@ public class UsageManager {
                 throw new NotFoundException("No license found " + licenseId);
             }
 
-            LicenseType type = this.licenseTypes.get(ld.getType());
+            LicenseType type = this.licenseTypes.get(ld.getTypeId());
             if (type == null) {
-                throw new NotFoundException("No license type found  " + ld.getType());
+                throw new NotFoundException("No license type found  " + ld.getTypeId());
             }
 
             // create and add to runtime license instance
@@ -90,7 +90,6 @@ public class UsageManager {
         session.getLicense().removeSession(sessionId);
         sessionRegistry.remove(sessionId);
     }
-
 
     public void check(String licenseType) throws NotFoundException {
         LicenseType type = this.licenseTypes.get(licenseType);
