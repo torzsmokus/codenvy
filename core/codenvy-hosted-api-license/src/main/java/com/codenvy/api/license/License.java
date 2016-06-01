@@ -39,9 +39,7 @@ public abstract class License {
         this.data = data;
         this.type = type;
         this.sessions = new HashMap<>();
-        // todo
-        this.owner = new Identity(data.getOwnerType().equalsIgnoreCase("user") ? Identity.Type.USER : Identity.Type.ORG,
-                                  data.getId());
+        this.owner = data.getOwner();
     }
 
     public LicenseType getType() {
