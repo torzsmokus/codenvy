@@ -23,7 +23,7 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.model.user.Profile;
 import org.eclipse.che.api.core.model.user.User;
-import org.eclipse.che.api.user.server.PreferencesManager;
+import org.eclipse.che.api.user.server.PreferenceManager;
 import org.eclipse.che.api.user.server.ProfileManager;
 import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
@@ -50,7 +50,7 @@ public class OrgServiceUserCreator implements UserCreator {
     private ProfileManager profileManager;
 
     @Inject
-    private PreferencesManager preferencesManager;
+    private PreferenceManager preferenceManager;
 
     @Inject
     @Named("user.self.creation.allowed")
@@ -72,7 +72,7 @@ public class OrgServiceUserCreator implements UserCreator {
                 // Updating preferences
                 final Map<String, String> preferences = new HashMap<>();
                 preferences.put("resetPassword", "true");
-                preferencesManager.update(user.getId(), preferences);
+                preferenceManager.update(user.getId(), preferences);
 
                 // Updating profile
                 final Profile profile = profileManager.getById(user.getId());
@@ -113,7 +113,7 @@ public class OrgServiceUserCreator implements UserCreator {
 
             final Map<String, String> preferences = new HashMap<>();
             preferences.put("temporary", String.valueOf(true));
-            preferencesManager.update(user.getId(), preferences);
+            preferenceManager.update(user.getId(), preferences);
 
             LOG.info("Temporary user {} created", anonymousUser);
             return user;

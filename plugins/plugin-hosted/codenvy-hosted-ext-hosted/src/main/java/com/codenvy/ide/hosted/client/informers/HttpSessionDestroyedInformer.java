@@ -89,7 +89,7 @@ public class HttpSessionDestroyedInformer implements HttpSessionDestroyedHandler
                 dtoUnmarshallerFactory.newUnmarshaller(UserDto.class)) {
             @Override
             protected void onSuccess(UserDto result) {
-                if (!appContext.getCurrentUser().getProfile().getId().equals(result.getId())) {
+                if (!appContext.getCurrentUser().getProfile().getUserId().equals(result.getId())) {
                     showPromptToLogin();
                 }
             }

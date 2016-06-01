@@ -81,7 +81,7 @@ public class LdapProfileDaoTest extends BaseTest {
     public void shouldBeAbleToGetProfileById() throws Exception {
         final ProfileImpl profile = profileDao.getById("profile-id");
 
-        assertEquals(profile.getId(), "profile-id");
+        assertEquals(profile.getUserId(), "profile-id");
 
         final Map<String, String> expectedAttributes = new HashMap<>();
         expectedAttributes.put("name", "Test User");

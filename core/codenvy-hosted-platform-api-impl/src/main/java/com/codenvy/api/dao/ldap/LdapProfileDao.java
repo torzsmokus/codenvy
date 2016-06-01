@@ -74,7 +74,7 @@ public class LdapProfileDao implements ProfileDao {
     /** {@inheritDoc} */
     @Override
     public void update(ProfileImpl profile) throws NotFoundException, ServerException {
-        final String id = profile.getId();
+        final String id = profile.getUserId();
         final ProfileImpl existing = getById(id);
         InitialLdapContext context = null;
         try {
@@ -84,7 +84,7 @@ public class LdapProfileDao implements ProfileDao {
                 context.modifyAttributes(attributesMapper.getProfileDn(id), mods);
             }
         } catch (NamingException ex) {
-            throw new ServerException(format("Unable to update profile '%s'", profile.getId()));
+            throw new ServerException(format("Unable to update profile '%s'", profile.getUserId()));
         } finally {
             close(context);
         }
