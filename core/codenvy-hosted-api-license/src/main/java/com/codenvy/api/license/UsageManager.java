@@ -53,31 +53,13 @@ public class UsageManager {
     /**
      * called by resource consumer (machine service)
      *
-     * @param user
+     * @param identity
      * @param resources
      * @return
      */
-    public ActiveSession start(String user, String licenseId, Set<Resource> resources) throws NotEnoughResourcesException,
-                                                                                              ServerException, NotFoundException {
-        License license = this.runtimeLicenses.get(licenseId);
-
-        if (license == null) {
-            LicenseData ld = this.licenseDao.get(licenseId);
-            if (ld == null) {
-                throw new NotFoundException("No license found " + licenseId);
-            }
-
-            LicenseType type = this.licenseTypes.get(ld.getTypeId());
-            if (type == null) {
-                throw new NotFoundException("No license type found  " + ld.getTypeId());
-            }
-
-            // create and add to runtime license instance
-            license = type.createInstance(ld);
-            runtimeLicenses.put(licenseId, license);
-        }
-
-        return sessionRegistry.add(user, resources, license);
+    public ActiveSession start(String user, Identity identity, Set<Resource> resources) throws NotEnoughResourcesException,
+                                                                                               ServerException, NotFoundException {
+        return sessionRegistry.add(identity, resources);
     }
 
     /**

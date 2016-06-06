@@ -21,14 +21,14 @@ import com.codenvy.api.license.Identity;
  */
 public class LicenseData {
     private String   id;
-    private String   typeId;
+    private String   type;
     private Identity owner;
     private long     startTime;
     private long     endTime;
 
-    public LicenseData(String id, String typeId, Identity owner, long startTime, long endTime) {
+    public LicenseData(String id, String type, Identity owner, long startTime, long endTime) {
         this.id = id;
-        this.typeId = typeId;
+        this.type = type;
         this.owner = owner;
         this.startTime = startTime;
         this.endTime = endTime;
@@ -38,8 +38,8 @@ public class LicenseData {
         return id;
     }
 
-    public String getTypeId() {
-        return typeId;
+    public String getType() {
+        return type;
     }
 
     public Identity getOwner() {

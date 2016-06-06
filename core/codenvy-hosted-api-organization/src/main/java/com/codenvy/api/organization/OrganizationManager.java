@@ -14,37 +14,33 @@
  */
 package com.codenvy.api.organization;
 
-import com.codenvy.api.license.License;
-
 import java.util.List;
 
 /**
+ * Facade for Organization related operations.
+ *
  * @author gazarenkov
+ * @author Sergii Leschenko
  */
 public class OrganizationManager {
 
-    public Organization create(String name, License license) {
-        return null;
+    public Organization create(String name) {
+        throw new UnsupportedOperationException();
     }
 
-    public void remove(String organizationId) {
-
+    public void remove(String organization) {
+        throw new UnsupportedOperationException();
     }
 
-    public Organization updateName(String name) {
-        return null;
+    public Organization updateName(String organization, String name) {
+        throw new UnsupportedOperationException();
     }
 
-    public Organization updateLicense(License license) {
-        return null;
-    }
-
-
-    public Member addMember(String userId, String organizationId, List<String> actions) {
-        return null;
+    public Member addMember(String user, String organization, List<String> actions) {
+        throw new UnsupportedOperationException();
     }
 
     public void removeMember(String organization, String user) {
-
+        throw new UnsupportedOperationException();
     }
 }

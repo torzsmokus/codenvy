@@ -58,22 +58,28 @@ public class SessionRegistry {
         return data;
     }
 
-    public ActiveSession add(String user, Set<Resource> resources, License license) throws NotFoundException {
+    public ActiveSession add(Identity identity, Set<Resource> resources) throws NotFoundException {
         String id = NameGenerator.generate("license", 16);
-        ActiveSession session = new ActiveSession(id, user, license, System.currentTimeMillis(), resources);
+        //TODO do we need to have license in session. Maybe to know why user can use resources.
+        //TODO But it is possible only if identit'll have only one active license
+        //TODO Fix identity.getId and null instead of license
+        ActiveSession session = new ActiveSession(id, identity.getId(), null, System.currentTimeMillis(), resources);
         activeSessions.put(id, session);
-        license.addSession(session);
         sessionDao.add(session);
         return session;
     }
 
-    public void remove(String id) {
-        ActiveSession session = activeSessions.get(id);
-        if (session != null) {
-            sessionDao.setStop(id, System.currentTimeMillis(), "setStop");
-        }
-        activeSessions.remove(id);
+    public void tick(String sessionId) {
+        //TODO Maybe update action license instance
+        sessionDao.setStop(sessionId, System.currentTimeMillis(), "tick");
+    }
 
+    public void stop(String sessionId) {
+        ActiveSession session = activeSessions.get(sessionId);
+        if (session != null) {
+            sessionDao.setStop(sessionId, System.currentTimeMillis(), "setStop");
+        }
+        activeSessions.remove(sessionId);
     }
 
     public List<ActiveSession> getActiveByType(String licenseType) {
