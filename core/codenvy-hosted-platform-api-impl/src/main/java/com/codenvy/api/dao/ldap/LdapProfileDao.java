@@ -16,13 +16,14 @@ package com.codenvy.api.dao.ldap;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.dao.Profile;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
 
+import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
+import org.eclipse.che.api.user.server.spi.ProfileDao;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
+import javax.inject.Singleton;
 import javax.naming.NameNotFoundException;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
@@ -33,19 +34,20 @@ import javax.naming.ldap.InitialLdapContext;
 import static java.lang.String.format;
 
 /**
- * LDAP based implementation of {@link UserProfileDao}
+ * LDAP based implementation of {@link ProfileDao}.
  *
  * @author Eugene Voevodin
  */
-public class UserProfileDaoImpl implements UserProfileDao {
+@Singleton
+public class LdapProfileDao implements ProfileDao {
 
-    private static final Logger LOG = LoggerFactory.getLogger(UserProfileDaoImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(LdapProfileDao.class);
 
     private final InitialLdapContextFactory contextFactory;
     private final ProfileAttributesMapper   attributesMapper;
 
     @Inject
-    public UserProfileDaoImpl(InitialLdapContextFactory contextFactory, ProfileAttributesMapper attributesMapper) {
+    public LdapProfileDao(InitialLdapContextFactory contextFactory, ProfileAttributesMapper attributesMapper) {
         this.contextFactory = contextFactory;
         this.attributesMapper = attributesMapper;
     }
@@ -54,7 +56,7 @@ public class UserProfileDaoImpl implements UserProfileDao {
      * Not supported for this implementation, nothing will be done
      */
     @Override
-    public void create(Profile profile) throws ServerException {
+    public void create(ProfileImpl profile) throws ServerException {
         try {
             update(profile);
         } catch (NotFoundException e) {
@@ -71,9 +73,9 @@ public class UserProfileDaoImpl implements UserProfileDao {
 
     /** {@inheritDoc} */
     @Override
-    public void update(Profile profile) throws NotFoundException, ServerException {
-        final String id = profile.getId();
-        final Profile existing = getById(id);
+    public void update(ProfileImpl profile) throws NotFoundException, ServerException {
+        final String id = profile.getUserId();
+        final ProfileImpl existing = getById(id);
         InitialLdapContext context = null;
         try {
             final ModificationItem[] mods = attributesMapper.createModifications(existing.getAttributes(), profile.getAttributes());
@@ -82,7 +84,7 @@ public class UserProfileDaoImpl implements UserProfileDao {
                 context.modifyAttributes(attributesMapper.getProfileDn(id), mods);
             }
         } catch (NamingException ex) {
-            throw new ServerException(format("Unable to update profile '%s'", profile.getId()));
+            throw new ServerException(format("Unable to update profile '%s'", profile.getUserId()));
         } finally {
             close(context);
         }
@@ -90,9 +92,9 @@ public class UserProfileDaoImpl implements UserProfileDao {
 
     /** {@inheritDoc} */
     @Override
-    public Profile getById(String id) throws NotFoundException, ServerException {
+    public ProfileImpl getById(String id) throws NotFoundException, ServerException {
         try {
-            final Profile profile = doGetById(id);
+            final ProfileImpl profile = doGetById(id);
             if (profile == null) {
                 throw new NotFoundException(format("Profile with id '%s' was not found", id));
             }
@@ -102,8 +104,8 @@ public class UserProfileDaoImpl implements UserProfileDao {
         }
     }
 
-    private Profile doGetById(String id) throws NamingException {
-        Profile profile = null;
+    private ProfileImpl doGetById(String id) throws NamingException {
+        ProfileImpl profile = null;
         InitialLdapContext context = null;
         try {
             context = contextFactory.createContext();

@@ -21,8 +21,9 @@ import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.Page;
 import org.eclipse.che.api.core.ServerException;
 import org.eclipse.che.api.core.rest.ApiExceptionMapper;
-import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.shared.dto.UserDescriptor;
+import org.eclipse.che.api.user.server.UserLinksInjector;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
+import org.eclipse.che.api.user.shared.dto.UserDto;
 import org.eclipse.che.commons.json.JsonHelper;
 import org.eclipse.che.commons.subject.Subject;
 import org.everrest.core.impl.ApplicationContextImpl;
@@ -91,7 +92,7 @@ public class AdminUserServiceTest {
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
         dependencies.addComponent(AdminUserDao.class, userDao);
 
-        userService = new AdminUserService(userDao);
+        userService = new AdminUserService(userDao, new UserLinksInjector());
         final Field uriField = userService.getClass()
                                           .getSuperclass()
                                           .getDeclaredField("uriInfo");
@@ -110,7 +111,7 @@ public class AdminUserServiceTest {
         providerBinder.addExceptionMapper(ApiExceptionMapper.class);
         ApplicationContextImpl.setCurrent(new ApplicationContextImpl(null, null, providerBinder));
         //set up user
-        final User user = createUser();
+        final UserImpl user = createUser();
         when(environmentContext.get(SecurityContext.class)).thenReturn(securityContext);
 
         when(uriInfo.getBaseUriBuilder()).thenReturn(new UriBuilderImpl());
@@ -154,8 +155,8 @@ public class AdminUserServiceTest {
         });
     }
 
-    private User createUser() throws NotFoundException, ServerException {
-        final User testUser = new User().withId("test_id").withEmail("test@email");
+    private UserImpl createUser() throws NotFoundException, ServerException {
+        final UserImpl testUser = new UserImpl("user123", "test@codenvy.com", "test");
         when(userDao.getAll(anyInt(), anyInt())).thenReturn(new Page<>(singletonList(testUser), 0, 1, 1));
         return testUser;
     }
@@ -168,7 +169,7 @@ public class AdminUserServiceTest {
         verify(userDao).getAll(3, 4);
 
         @SuppressWarnings("unchecked")
-        List<UserDescriptor> users = (List<UserDescriptor>)response.getEntity();
+        List<UserDto> users = (List<UserDto>)response.getEntity();
         assertEquals(users.size(), 1);
     }
 

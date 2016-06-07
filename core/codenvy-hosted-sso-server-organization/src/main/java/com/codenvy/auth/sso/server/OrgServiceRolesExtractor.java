@@ -19,7 +19,7 @@ import com.codenvy.api.dao.ldap.InitialLdapContextFactory;
 
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
+import org.eclipse.che.api.user.server.PreferenceManager;
 import org.eclipse.che.commons.annotation.Nullable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ import static java.util.Collections.emptySet;
  */
 public class OrgServiceRolesExtractor implements RolesExtractor {
     private static final Logger LOG = LoggerFactory.getLogger(OrgServiceRolesExtractor.class);
-    private final PreferenceDao             preferenceDao;
+    private final PreferenceManager         preferenceManager;
     private final InitialLdapContextFactory contextFactory;
     private final String                    containerDn;
     private final String                    userDn;
@@ -57,14 +57,14 @@ public class OrgServiceRolesExtractor implements RolesExtractor {
     private final String                    allowedRole;
 
     @Inject
-    public OrgServiceRolesExtractor(PreferenceDao preferenceDao,
+    public OrgServiceRolesExtractor(PreferenceManager preferenceManager,
                                     @Named("user.ldap.user_container_dn") String userContainerDn,
                                     @Named("user.ldap.user_dn") String userDn,
                                     @Named("user.ldap.old_user_dn") String oldUserDn,
                                     @Nullable @Named("user.ldap.attr.role_name") String roleAttrName,
                                     @Nullable @Named("user.ldap.allowed_role") String allowedRole,
                                     InitialLdapContextFactory contextFactory) {
-        this.preferenceDao = preferenceDao;
+        this.preferenceManager = preferenceManager;
         this.roleAttrName = roleAttrName;
         this.allowedRole = allowedRole;
         this.containerDn = userContainerDn;
@@ -88,7 +88,7 @@ public class OrgServiceRolesExtractor implements RolesExtractor {
 
             final Set<String> userRoles = new HashSet<>();
 
-            final Map<String, String> preferences = preferenceDao.getPreferences(ticket.getPrincipal().getUserId());
+            final Map<String, String> preferences = preferenceManager.find(ticket.getPrincipal().getUserId());
             if (parseBoolean(preferences.get("temporary"))) {
                 userRoles.add("temp_user");
             } else {

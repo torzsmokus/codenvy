@@ -24,7 +24,7 @@ import org.aopalliance.intercept.MethodInterceptor;
 import org.aopalliance.intercept.MethodInvocation;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.user.server.UserService;
-import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.commons.env.EnvironmentContext;
 import org.eclipse.che.commons.lang.Deserializer;
 import org.eclipse.che.commons.subject.Subject;
@@ -84,7 +84,7 @@ public class CreateUserInterceptor implements MethodInterceptor {
         invocation.proceed();
 
         try {
-            User user = (User)invocation.getArguments()[0];
+            UserImpl user = (UserImpl)invocation.getArguments()[0];
 
             String userEmail = user.getEmail();
             URL urlEndpoint = new URL(apiEndpoint);

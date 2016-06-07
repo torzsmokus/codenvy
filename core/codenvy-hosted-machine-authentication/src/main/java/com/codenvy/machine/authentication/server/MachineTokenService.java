@@ -19,7 +19,7 @@ import com.codenvy.machine.authentication.shared.dto.MachineTokenDto;
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
-import org.eclipse.che.api.user.shared.dto.UserDescriptor;
+import org.eclipse.che.api.user.shared.dto.UserDto;
 import org.eclipse.che.commons.env.EnvironmentContext;
 
 import javax.annotation.security.RolesAllowed;
@@ -95,11 +95,11 @@ public class MachineTokenService {
     @Path("/user/{token}")
     @Produces(MediaType.APPLICATION_JSON)
     @RolesAllowed("user")
-    public UserDescriptor getUser(@PathParam("token") String token) throws ApiException, IOException {
+    public UserDto getUser(@PathParam("token") String token) throws ApiException, IOException {
         final String userId = registry.getUserId(token);
         return requestFactory.fromUrl(apiEndpoint + "/user/" + userId)
                              .useGetMethod()
                              .request()
-                             .asDto(UserDescriptor.class);
+                             .asDto(UserDto.class);
     }
 }

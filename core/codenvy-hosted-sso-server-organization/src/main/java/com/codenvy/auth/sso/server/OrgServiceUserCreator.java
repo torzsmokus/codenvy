@@ -21,12 +21,12 @@ import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.user.server.Constants;
-import org.eclipse.che.api.user.server.dao.PreferenceDao;
-import org.eclipse.che.api.user.server.dao.Profile;
-import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.server.dao.UserDao;
-import org.eclipse.che.api.user.server.dao.UserProfileDao;
+import org.eclipse.che.api.core.model.user.Profile;
+import org.eclipse.che.api.core.model.user.User;
+import org.eclipse.che.api.user.server.PreferenceManager;
+import org.eclipse.che.api.user.server.ProfileManager;
+import org.eclipse.che.api.user.server.UserManager;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +36,6 @@ import javax.inject.Named;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author Sergii Kabashniuk
@@ -45,13 +44,13 @@ public class OrgServiceUserCreator implements UserCreator {
     private static final Logger LOG = LoggerFactory.getLogger(OrgServiceUserCreator.class);
 
     @Inject
-    private UserDao userDao;
+    private UserManager userManager;
 
     @Inject
-    private UserProfileDao profileDao;
+    private ProfileManager profileManager;
 
     @Inject
-    private PreferenceDao preferenceDao;
+    private PreferenceManager preferenceManager;
 
     @Inject
     @Named("user.self.creation.allowed")
@@ -61,37 +60,25 @@ public class OrgServiceUserCreator implements UserCreator {
     public User createUser(String email, String userName, String firstName, String lastName) throws IOException {
         //TODO check this method should only call if user is not exists.
         try {
-            return userDao.getByAlias(email);
+            return userManager.getByEmail(email);
         } catch (NotFoundException e) {
             if (!userSelfCreationAllowed) {
                 throw new IOException("Currently only admins can create accounts. Please contact our Admin Team for further info.");
             }
 
-            String id = NameGenerator.generate(User.class.getSimpleName().toLowerCase(), Constants.ID_LENGTH);
-
-            final Map<String, String> attributes = new HashMap<>();
-            attributes.put("firstName", firstName);
-            attributes.put("lastName", lastName);
-            attributes.put("email", email);
-
-            Profile profile = new Profile()
-                    .withId(id)
-                    .withUserId(id)
-                    .withAttributes(attributes);
-            String password = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
-
             try {
-                final User user = new User().withId(id)
-                                            .withName(userName)
-                                            .withEmail(email)
-                                            .withPassword(password);
-                userDao.create(user);
-                profileDao.create(profile);
+                final User user = userManager.create(new UserImpl(null, email, userName), false);
 
+                // Updating preferences
                 final Map<String, String> preferences = new HashMap<>();
-                preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
                 preferences.put("resetPassword", "true");
-                preferenceDao.setPreferences(id, preferences);
+                preferenceManager.update(user.getId(), preferences);
+
+                // Updating profile
+                final Profile profile = profileManager.getById(user.getId());
+                profile.getAttributes().put("firstName", firstName);
+                profile.getAttributes().put("lastName", lastName);
+                profileManager.update(profile);
 
                 return user;
             } catch (ConflictException | ServerException | NotFoundException e1) {
@@ -106,13 +93,12 @@ public class OrgServiceUserCreator implements UserCreator {
     @Override
     public User createTemporary() throws IOException {
 
-        String id = NameGenerator.generate(User.class.getSimpleName(), Constants.ID_LENGTH);
         try {
             String testName;
             while (true) {
                 testName = NameGenerator.generate("AnonymousUser_", 6);
                 try {
-                    userDao.getByName(testName);
+                    userManager.getByName(testName);
                 } catch (NotFoundException e) {
                     break;
                 } catch (ApiException e) {
@@ -122,22 +108,12 @@ public class OrgServiceUserCreator implements UserCreator {
 
 
             final String anonymousUser = testName;
-            // generate password and delete all "-" symbols which are generated by randomUUID()
-            String password = UUID.randomUUID().toString().replace("-", "").substring(0, 12);
 
-
-            final User user = new User().withId(id).withName(anonymousUser)
-                                        .withPassword(password);
-            userDao.create(user);
-
-            profileDao.create(new Profile()
-                                      .withId(id)
-                                      .withUserId(id));
+            final User user = userManager.create(new UserImpl(null, anonymousUser, anonymousUser), true);
 
             final Map<String, String> preferences = new HashMap<>();
             preferences.put("temporary", String.valueOf(true));
-            preferences.put("codenvy:created", Long.toString(System.currentTimeMillis()));
-            preferenceDao.setPreferences(id, preferences);
+            preferenceManager.update(user.getId(), preferences);
 
             LOG.info("Temporary user {} created", anonymousUser);
             return user;

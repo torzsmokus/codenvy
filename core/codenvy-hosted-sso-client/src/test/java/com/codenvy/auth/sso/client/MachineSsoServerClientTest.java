@@ -18,10 +18,13 @@ import com.codenvy.auth.sso.shared.dto.SubjectDto;
 import com.codenvy.machine.authentication.server.MachineTokenRegistry;
 
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.api.core.rest.HttpJsonRequest;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.core.rest.HttpJsonResponse;
 import org.eclipse.che.api.user.server.UserManager;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.commons.subject.Subject;
 import org.eclipse.che.commons.test.SelfReturningAnswer;
 import org.testng.annotations.BeforeMethod;
@@ -50,16 +53,18 @@ public class MachineSsoServerClientTest {
     private static final String ENDPOINT = "http://localhost";
 
     private MachineTokenRegistry   registrySpy;
+    private HttpJsonResponse       responseMock;
     private UserManager            userManagerMock;
     private MachineSsoServerClient ssoClient;
 
     @BeforeMethod
     public void initClient() throws Exception {
+
         registrySpy = spy(new MachineTokenRegistry());
 
         userManagerMock = mock(UserManager.class);
 
-        final HttpJsonResponse responseMock = mock(HttpJsonResponse.class);
+        responseMock = mock(HttpJsonResponse.class);
         when(responseMock.asDto(SubjectDto.class)).thenReturn(newDto(SubjectDto.class));
 
         final HttpJsonRequest requestMock = mock(HttpJsonRequest.class, new SelfReturningAnswer());
@@ -91,14 +96,12 @@ public class MachineSsoServerClientTest {
     }
 
     @Test
-    public void getSubjectMustReturnTheSubjectRetrievedFromTheApiRequestWithMachineToken() throws Exception {
+    public void getSubjectMustReturnTheSubjectRetrievedFromTheApiRequestWithMachineToken() throws NotFoundException, ServerException {
         // machine token
         final String token = registrySpy.generateToken("user123", "workspace1234");
         // mocking the user descriptor which will be returned from the user api
-        final org.eclipse.che.api.user.server.dao.User user =
-                new org.eclipse.che.api.user.server.dao.User().withName("name")
-                                                              .withEmail("mail")
-                                                              .withId("user123");
+        final User user = new UserImpl("user123", "mail", "name");
+        final HttpJsonResponse responseMock = mock(HttpJsonResponse.class);
         when(userManagerMock.getById(any())).thenReturn(user);
 
         final Subject sessionUser = ssoClient.getSubject(token, "client");

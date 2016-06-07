@@ -22,7 +22,7 @@ import com.codenvy.service.password.RecoveryStorage;
 
 import org.aopalliance.intercept.MethodInvocation;
 import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
@@ -44,7 +44,7 @@ public class CreateUserInterceptorTest extends BaseInterceptorTest {
     @Mock
     private MailSenderClient      mailSenderClient;
     @Mock
-    private User                  user;
+    private UserImpl              user;
     @Mock
     private MethodInvocation      invocation;
     @Mock
