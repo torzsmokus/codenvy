@@ -12,33 +12,25 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
-
-import com.codenvy.api.license.License;
-import com.codenvy.api.license.data.LicenseData;
+package com.codenvy.api.resources.model;
 
 /**
- * Type of license, describes license and is a factory for license instance
- *
  * @author gazarenkov
  */
-public interface LicenseType {
+public interface Resource {
 
     /**
-     * @return id
+     * Returns type of resources, e.g. RAM
      */
-    String getId();
+    String getType();
 
     /**
-     * @return human readable description
+     * Returns amount of resources
      */
-    String getDescription();
+    int getAmount();
 
     /**
-     * factory method for instance creating
-     *
-     * @return
+     * Returns unit of resources, e.g. for RAM type it can be equal to mb, gb
      */
-    License createInstance(LicenseData licenseData);
-
+    String getUnit();
 }

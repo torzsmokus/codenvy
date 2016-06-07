@@ -12,35 +12,30 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license;
+package com.codenvy.api.organization.model;
+
+import java.util.List;
 
 /**
- * Identity: User or Organization
- *
- * TEMPORARY HERE
- * todo move to appropriate place
+ * Describes link between user and organization
  *
  * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public class Identity {
-    public enum Type {
-        USER,
-        ORG
-    }
+public interface Member {
 
-    private final Type   type;
-    private final String id;
+    /**
+     * Returns id of user
+     */
+    String getUser();
 
-    public Identity(final Type type, final String id) {
-        this.type = type;
-        this.id = id;
-    }
+    /**
+     * Returns id of organization
+     */
+    String getOrganization();
 
-    public Type getType() {
-        return type;
-    }
-
-    public String getId() {
-        return id;
-    }
+    /**
+     * Returns list of actions that user can perform in organization
+     */
+    List<String> getPermittedActions();
 }
