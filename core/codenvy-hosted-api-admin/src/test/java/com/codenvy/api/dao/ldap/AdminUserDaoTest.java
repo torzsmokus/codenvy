@@ -43,7 +43,7 @@ public class AdminUserDaoTest extends BaseTest {
 
     @BeforeMethod
     public void setUp() throws Exception {
-        factory = spy(new InitialLdapContextFactory(embeddedLdapServer.getUrl(),
+        factory = spy(new InitialLdapContextFactory(() -> embeddedLdapServer.getUrl(),
                                                     null,
                                                     null,
                                                     null,

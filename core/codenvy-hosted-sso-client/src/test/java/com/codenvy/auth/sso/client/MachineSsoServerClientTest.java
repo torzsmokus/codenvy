@@ -53,18 +53,16 @@ public class MachineSsoServerClientTest {
     private static final String ENDPOINT = "http://localhost";
 
     private MachineTokenRegistry   registrySpy;
-    private HttpJsonResponse       responseMock;
     private UserManager            userManagerMock;
     private MachineSsoServerClient ssoClient;
 
     @BeforeMethod
     public void initClient() throws Exception {
-
         registrySpy = spy(new MachineTokenRegistry());
 
         userManagerMock = mock(UserManager.class);
 
-        responseMock = mock(HttpJsonResponse.class);
+        final HttpJsonResponse responseMock = mock(HttpJsonResponse.class);
         when(responseMock.asDto(SubjectDto.class)).thenReturn(newDto(SubjectDto.class));
 
         final HttpJsonRequest requestMock = mock(HttpJsonRequest.class, new SelfReturningAnswer());
@@ -96,12 +94,11 @@ public class MachineSsoServerClientTest {
     }
 
     @Test
-    public void getSubjectMustReturnTheSubjectRetrievedFromTheApiRequestWithMachineToken() throws NotFoundException, ServerException {
+    public void getSubjectMustReturnTheSubjectRetrievedFromTheApiRequestWithMachineToken() throws Exception {
         // machine token
         final String token = registrySpy.generateToken("user123", "workspace1234");
         // mocking the user descriptor which will be returned from the user api
         final User user = new UserImpl("user123", "mail", "name");
-        final HttpJsonResponse responseMock = mock(HttpJsonResponse.class);
         when(userManagerMock.getById(any())).thenReturn(user);
 
         final Subject sessionUser = ssoClient.getSubject(token, "client");

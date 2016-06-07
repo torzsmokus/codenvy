@@ -14,13 +14,13 @@
  */
 package com.codenvy.api.dao.ldap;
 
+import com.codenvy.api.dao.ldap.LdapCloser.CloseableSupplier;
+
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
 
 import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.eclipse.che.api.user.server.spi.ProfileDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
@@ -31,7 +31,9 @@ import javax.naming.directory.ModificationItem;
 import javax.naming.ldap.InitialLdapContext;
 
 
+import static com.codenvy.api.dao.ldap.LdapCloser.deferClose;
 import static java.lang.String.format;
+import static java.util.Objects.requireNonNull;
 
 /**
  * LDAP based implementation of {@link ProfileDao}.
@@ -40,8 +42,6 @@ import static java.lang.String.format;
  */
 @Singleton
 public class LdapProfileDao implements ProfileDao {
-
-    private static final Logger LOG = LoggerFactory.getLogger(LdapProfileDao.class);
 
     private final InitialLdapContextFactory contextFactory;
     private final ProfileAttributesMapper   attributesMapper;
@@ -71,28 +71,26 @@ public class LdapProfileDao implements ProfileDao {
     public void remove(String id) throws ServerException {
     }
 
-    /** {@inheritDoc} */
     @Override
     public void update(ProfileImpl profile) throws NotFoundException, ServerException {
+        requireNonNull(profile, "Required non-null profile");
         final String id = profile.getUserId();
         final ProfileImpl existing = getById(id);
-        InitialLdapContext context = null;
         try {
             final ModificationItem[] mods = attributesMapper.createModifications(existing.getAttributes(), profile.getAttributes());
             if (mods.length > 0) {
-                context = contextFactory.createContext();
-                context.modifyAttributes(attributesMapper.getProfileDn(id), mods);
+                try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+                    contextSup.get().modifyAttributes(attributesMapper.getProfileDn(id), mods);
+                }
             }
         } catch (NamingException ex) {
             throw new ServerException(format("Unable to update profile '%s'", profile.getUserId()));
-        } finally {
-            close(context);
         }
     }
 
-    /** {@inheritDoc} */
     @Override
     public ProfileImpl getById(String id) throws NotFoundException, ServerException {
+        requireNonNull(id, "Required non-null id");
         try {
             final ProfileImpl profile = doGetById(id);
             if (profile == null) {
@@ -105,18 +103,13 @@ public class LdapProfileDao implements ProfileDao {
     }
 
     private ProfileImpl doGetById(String id) throws NamingException {
-        ProfileImpl profile = null;
-        InitialLdapContext context = null;
-        try {
-            context = contextFactory.createContext();
-            final Attributes attributes = getProfileAttributes(context, id);
+        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext()))  {
+            final Attributes attributes = getProfileAttributes(contextSup.get(), id);
             if (attributes != null) {
-                profile = attributesMapper.asProfile(attributes);
+                return attributesMapper.asProfile(attributes);
             }
-        } finally {
-            close(context);
         }
-        return profile;
+        return null;
     }
 
     private Attributes getProfileAttributes(InitialLdapContext ctx, String id) throws NamingException {
@@ -124,16 +117,6 @@ public class LdapProfileDao implements ProfileDao {
             return ctx.getAttributes(attributesMapper.getProfileDn(id));
         } catch (NameNotFoundException nnfEx) {
             return null;
-        }
-    }
-
-    private void close(InitialLdapContext context) {
-        if (context != null) {
-            try {
-                context.close();
-            } catch (NamingException namingEx) {
-                LOG.error(namingEx.getMessage(), namingEx);
-            }
         }
     }
 }

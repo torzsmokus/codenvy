@@ -15,67 +15,47 @@
 package com.codenvy.api.dao.ldap;
 
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
-import org.eclipse.che.commons.test.tck.TckRepository;
-import org.testng.ITestContext;
+import org.eclipse.che.commons.test.tck.TckRepositoryException;
 
 import javax.inject.Inject;
+import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
 import javax.naming.directory.DirContext;
 import javax.naming.ldap.InitialLdapContext;
 import java.util.Collection;
 
+import static com.codenvy.api.dao.ldap.LdapCloser.close;
+import static com.codenvy.api.dao.ldap.LdapCloser.deferClose;
+
 /**
  * @author Yevhenii Voevodin
  */
-public class UserTckRepository implements TckRepository<UserImpl> {
+public class UserTckRepository extends AbstractLdapTckRepository<UserImpl> {
+
+    private final UserAttributesMapper mapper;
 
     @Inject
-    private ITestContext testContext;
-
-    private final UserAttributesMapper      mapper;
-    private final InitialLdapContextFactory ctxFactory;
-
-    public UserTckRepository(UserAttributesMapper mapper) {
+    protected UserTckRepository(@Named("user.ldap.user_container_dn") String containerDn,
+                                InitialLdapContextFactory contextFactory,
+                                UserAttributesMapper mapper) {
+        super(mapper.userIdAttr, containerDn, mapper.userObjectClasses, contextFactory);
         this.mapper = mapper;
-        this.ctxFactory = new InitialLdapContextFactory(testContext.getAttribute("ldap_server_url").toString(),
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        null,
-                                                        null);
     }
 
     @Override
-    public void createAll(Collection<? extends UserImpl> users) {
-        InitialLdapContext context = null;
-        DirContext newContext = null;
-        try {
-            context = ctxFactory.createContext();
-
-            for (UserImpl user : users) {
+    public void createAll(Collection<? extends UserImpl> entities) throws TckRepositoryException {
+        try (LdapCloser.CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+            for (UserImpl user : entities) {
                 try {
                     final Attributes attributes = mapper.toAttributes(user);
-                    newContext = context.createSubcontext("dc=codenvy;dc=com;uid=" + user.getId(), attributes);
+                    close(contextSup.get().createSubcontext(normalizeDn(user.getId()), attributes));
                 } catch (NamingException x) {
-                    throw new RuntimeException(x.getMessage(), x);
-                } finally {
-                    context.close();
+                    throw new TckRepositoryException(x.getMessage(), x);
                 }
             }
         } catch (NamingException x) {
-            throw new RuntimeException(x.getMessage(), x);
-        } finally {
-            LdapCloser.close(context);
-            LdapCloser.close(newContext);
+            throw new TckRepositoryException(x.getMessage(), x);
         }
-    }
-
-    @Override
-    public void removeAll() {
-
     }
 }

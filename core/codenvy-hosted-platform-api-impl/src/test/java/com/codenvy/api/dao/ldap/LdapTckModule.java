@@ -14,67 +14,59 @@
  */
 package com.codenvy.api.dao.ldap;
 
-import com.google.inject.Binder;
 import com.google.inject.TypeLiteral;
+import com.google.inject.name.Names;
 
-import org.eclipse.che.api.core.ConflictException;
-import org.eclipse.che.api.core.NotFoundException;
-import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
+import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
+import org.eclipse.che.api.user.server.spi.ProfileDao;
 import org.eclipse.che.api.user.server.spi.UserDao;
+import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.test.tck.TckModule;
 import org.eclipse.che.commons.test.tck.TckRepository;
 
-public class LdapTckModule implements TckModule {
+import static com.codenvy.api.dao.ldap.LdapEmbeddedServerListener.LDAP_SERVER_URL_ATTRIBUTE_NAME;
+
+/**
+ * @author Yevhenii Voevodin
+ */
+public class LdapTckModule extends TckModule {
 
     @Override
-    public void configure(Binder binder) {
+    public void configure() {
+        final InitialLdapContextFactory contextFactory =
+                new InitialLdapContextFactory(() -> testContext.getAttribute(LDAP_SERVER_URL_ATTRIBUTE_NAME).toString(),
+                                              null,
+                                              null,
+                                              null,
+                                              null,
+                                              null,
+                                              null,
+                                              null,
+                                              null);
+        bind(InitialLdapContextFactory.class).toInstance(contextFactory);
 
-        binder.bind(UserAttributesMapper.class).toInstance(new UserAttributesMapper());
-        binder.bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserTckRepository.class);
+        bind(UserAttributesMapper.class).toInstance(new UserAttributesMapper());
 
-        binder.bind(UserDao.class).toInstance(new UserDao() {
-            @Override
-            public String authenticate(String emailOrAliasOrName, String password)
-                    throws UnauthorizedException, ServerException {
-                return null;
-            }
+        @SuppressWarnings("unchecked") // array contains only strings
+        final Pair<String, String>[] allowedAttributes = new Pair[3];
+        allowedAttributes[0] = Pair.of("givenName", "firstName");
+        allowedAttributes[1] = Pair.of("sn", "lastName");
+        allowedAttributes[2] = Pair.of("o", "company");
+        bind(ProfileAttributesMapper.class).toInstance(new ProfileAttributesMapper("dc=codenvy;dc=com",
+                                                                                   "uid",
+                                                                                   "uid",
+                                                                                   "mail",
+                                                                                   allowedAttributes));
 
-            @Override
-            public void create(UserImpl user) throws ConflictException, ServerException {
+        bind(new TypeLiteral<TckRepository<UserImpl>>() {}).to(UserTckRepository.class);
+        bind(new TypeLiteral<TckRepository<ProfileImpl>>() {}).to(ProfileTckRepository.class);
 
-            }
+        bindConstant().annotatedWith(Names.named("user.ldap.user_dn")).to("uid");
+        bindConstant().annotatedWith(Names.named("user.ldap.old_user_dn")).to("cn");
+        bindConstant().annotatedWith(Names.named("user.ldap.user_container_dn")).to("dc=codenvy;dc=com");
 
-            @Override
-            public void update(UserImpl user) throws NotFoundException, ServerException, ConflictException {
-
-            }
-
-            @Override
-            public void remove(String id) throws ServerException, ConflictException {
-
-            }
-
-            @Override
-            public UserImpl getByAlias(String alias) throws NotFoundException, ServerException {
-                return null;
-            }
-
-            @Override
-            public UserImpl getById(String id) throws NotFoundException, ServerException {
-                return null;
-            }
-
-            @Override
-            public UserImpl getByName(String name) throws NotFoundException, ServerException {
-                return null;
-            }
-
-            @Override
-            public UserImpl getByEmail(String email) throws NotFoundException, ServerException {
-                return null;
-            }
-        });
+        bind(UserDao.class).to(LdapUserDao.class);
+        bind(ProfileDao.class).to(LdapProfileDao.class);
     }
 }

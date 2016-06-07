@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableSet;
 
 import org.eclipse.che.api.core.ApiException;
 import org.eclipse.che.api.core.model.user.User;
-import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.api.core.rest.HttpJsonRequestFactory;
 import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.commons.subject.Subject;

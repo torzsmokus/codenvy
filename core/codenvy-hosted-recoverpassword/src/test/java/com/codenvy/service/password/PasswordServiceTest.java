@@ -243,11 +243,11 @@ public class PasswordServiceTest {
 
     @Test
     public void shouldSendEmailToRecoverPassword() throws Exception {
-        when(userDao.getByAlias(USERNAME)).thenReturn(user);
-        when(recoveryStorage.generateRecoverToken(eq(USERNAME))).thenReturn(UUID);
+        when(userManager.getByAlias(USER_EMAIL)).thenReturn(user);
+        when(recoveryStorage.generateRecoverToken(eq(USER_EMAIL))).thenReturn(UUID);
         ArgumentCaptor<EmailBeanDto> argumentCaptor = ArgumentCaptor.forClass(EmailBeanDto.class);
 
-        given().pathParam("username", USERNAME).post(SERVICE_PATH + "/recover/{username}");
+        given().pathParam("username", USER_EMAIL).post(SERVICE_PATH + "/recover/{username}");
 
         verify(mailService).sendMail(argumentCaptor.capture());
         EmailBeanDto argumentCaptorValue = argumentCaptor.getValue();
