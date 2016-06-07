@@ -12,16 +12,23 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
+package com.codenvy.api.organization.model;
 
 /**
+ * Describes group of users that can use shared resources
+ *
  * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public interface Resource {
+public interface Organization {
 
-    String getType();
+    /**
+     * Returns id of organization
+     */
+    String getId();
 
-    int getAmount();
-
-    String getUnit();
+    /**
+     * Returns name of organization
+     */
+    String getName();
 }

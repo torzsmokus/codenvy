@@ -14,21 +14,41 @@
  */
 package com.codenvy.api.license;
 
-import com.codenvy.api.license.data.SessionData;
-
-import org.eclipse.che.api.core.NotFoundException;
-
 /**
- * Persistence storage
+ * Defines data access object contract for {@link License}.
  *
  * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public interface SessionDao {
+public interface LicenseDao {
+    /**
+     * Adds license
+     */
+    void create(License license);
 
-    SessionData get(String id);
+    /**
+     * Deletes license by id
+     *
+     * @param id
+     *         id of license
+     */
+    void delete(String id);
 
-    String add(ActiveSession session) throws NotFoundException;
+    /**
+     * Returns license by id
+     *
+     * @param id
+     *         the id
+     * @return license data
+     */
+    License get(String id);
 
-    void setStop(String id, long time, String reason);
-
+    /**
+     * Returns license by owner
+     *
+     * @param owner
+     *         id of account owner
+     * @return license data
+     */
+    License getByOwner(String owner);
 }

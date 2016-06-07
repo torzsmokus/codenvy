@@ -12,34 +12,34 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.data;
-
-import com.codenvy.api.license.model.Resource;
+package com.codenvy.api.account;
 
 /**
- * @author gazarenkov
+ * Describes entity that can have resources for using
+ *
+ * @author Sergii Leschenko
  */
-public class ResourceImpl implements Resource {
-    private final String type;
-    private final int    amount;
-    private final String unit;
-
-    public ResourceImpl(String type, int amount, String unit) {
-        this.type = type;
-        this.amount = amount;
-        this.unit = unit;
+public interface Account {
+    enum Type {
+        PERSONAL,
+        ORGANIZATION
     }
 
-    public String getType() {
-        return type;
-    }
+    /**
+     * Returns id of account
+     */
+    String getId();
 
-    public int getAmount() {
-        return amount;
-    }
+    /**
+     * Returns name of account
+     *
+     * <p>It should be equals to user name if it is {@link Type#PERSONAL} account
+     * or it should be equals to organization name if it is {@link Type#ORGANIZATION} account
+     */
+    String getName();
 
-    @Override
-    public String getUnit() {
-        return unit;
-    }
+    /**
+     * Returns type of account
+     */
+    Type getType();
 }

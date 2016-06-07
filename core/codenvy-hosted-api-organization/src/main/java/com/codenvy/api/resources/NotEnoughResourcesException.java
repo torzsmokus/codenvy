@@ -12,31 +12,23 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.organization;
+package com.codenvy.api.resources;
 
-import java.util.List;
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.rest.shared.dto.ServiceError;
 
 /**
- * Describe link between user and organization
+ * Should be thrown when user doesn't have enough number of resources to perform operation
  *
  * @author gazarenkov
  * @author Sergii Leschenko
  */
-public interface Member {
+public class NotEnoughResourcesException extends ConflictException {//TODO BadRequest vs Conflict
+    public NotEnoughResourcesException(String message) {
+        super(message);
+    }
 
-    /**
-     * Returns id of user
-     */
-    String getUser();
-
-    /**
-     * Returns id of organization
-     */
-    String getOrganization();
-
-    /**
-     * Returns list of actions that user can perform in organization
-     */
-    //TODO List of all possible permitted actions?
-    List<String> getPermittedActions();
+    public NotEnoughResourcesException(ServiceError serviceError) {
+        super(serviceError);
+    }
 }
