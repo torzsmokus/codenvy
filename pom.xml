@@ -102,6 +102,12 @@
                 <classifier>${site.classifier}</classifier>
             </dependency>
             <dependency>
+                <groupId>org.eclipse.che.core</groupId>
+                <artifactId>che-core-api-user</artifactId>
+                <classifier>tests</classifier>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
                 <groupId>com.codenvy.cli</groupId>
                 <artifactId>cli-assembly</artifactId>
                 <version>${project.version}</version>

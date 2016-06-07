@@ -107,7 +107,8 @@ public class UserAttributesMapper {
     }
 
     public UserAttributesMapper() {
-        this(new SSHAPasswordEncryptor(), new String[]{"inetOrgPerson"}, "uid", "cn", "userPassword", "mail", "initials");
+        this(new SSHAPasswordEncryptor(), new String[] {"inetOrgPerson"}, "uid", "cn", "userPassword", "mail",
+             "initials");
     }
 
     /**
@@ -202,7 +203,8 @@ public class UserAttributesMapper {
         // create modification for password if necessary
         if (dest.getPassword() != null) {
             mods.add(new ModificationItem(REPLACE_ATTRIBUTE,
-                                          new BasicAttribute(userPasswordAttr, encryptor.encrypt(dest.getPassword().getBytes()))));
+                                          new BasicAttribute(userPasswordAttr,
+                                                             encryptor.encrypt(dest.getPassword().getBytes()))));
         }
 
         // create modifications for aliases

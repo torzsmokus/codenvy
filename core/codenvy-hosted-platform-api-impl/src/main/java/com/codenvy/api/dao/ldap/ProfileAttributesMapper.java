@@ -46,11 +46,11 @@ import static javax.naming.directory.DirContext.REPLACE_ATTRIBUTE;
 @Singleton
 public class ProfileAttributesMapper {
 
-    private final String              profileDn;
-    private final String              profileIdAttr;
-    private final String              profileContainerDn;
-    private final String              profileEmailAttr;
-    private final Map<String, String> allowedAttributes;
+    final String              profileDn;
+    final String              profileIdAttr;
+    final String              profileContainerDn;
+    final String              profileEmailAttr;
+    final Map<String, String> allowedAttributes;
 
     /**
      * Creates new instance of {@link ProfileAttributesMapper}
