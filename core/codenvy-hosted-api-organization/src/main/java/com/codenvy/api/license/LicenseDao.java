@@ -14,6 +14,8 @@
  */
 package com.codenvy.api.license;
 
+import com.codenvy.api.license.model.License;
+
 /**
  * Defines data access object contract for {@link License}.
  *

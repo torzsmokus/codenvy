@@ -154,11 +154,6 @@
             </dependency>
             <dependency>
                 <groupId>com.codenvy.hosted-infrastructure</groupId>
-                <artifactId>codenvy-hosted-api-license</artifactId>
-                <version>${project.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.codenvy.hosted-infrastructure</groupId>
                 <artifactId>codenvy-hosted-api-organization</artifactId>
                 <version>${project.version}</version>
             </dependency>
