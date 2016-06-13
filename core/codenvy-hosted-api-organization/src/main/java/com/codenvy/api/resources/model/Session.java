@@ -32,7 +32,6 @@ public interface Session {
      */
     String getUser();
 
-
     /**
      * Returns account id
      */

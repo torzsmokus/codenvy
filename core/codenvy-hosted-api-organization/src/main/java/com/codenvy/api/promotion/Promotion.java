@@ -12,22 +12,43 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
+package com.codenvy.api.promotion;
+
+import com.codenvy.api.resources.model.Resource;
+
+import java.util.List;
 
 /**
- * Describes license type
- *
- * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public interface LicenseType {
-
+public interface Promotion {
     /**
-     * Returns id of license type
+     * Returns id of license
      */
     String getId();
 
     /**
-     * Returns human readable description
+     * Returns owner of license
      */
-    String getDescription();
+    String getOwner();
+
+    /**
+     * Returns cause why account was provided by promotion
+     */
+    String getCause();
+
+    /**
+     * Returns time when license became active
+     */
+    long getStartTime();
+
+    /**
+     * Returns time when license will be/became inactive
+     */
+    long getEndTime();
+
+    /**
+     * Returns list of resources which can be used by owner
+     */
+    List<Resource> getResources();
 }

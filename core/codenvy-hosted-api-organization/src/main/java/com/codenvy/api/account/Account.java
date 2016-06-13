@@ -22,7 +22,7 @@ package com.codenvy.api.account;
 public interface Account {
     enum Type {
         PERSONAL,
-        ORGANIZATION
+        ORGANIZATIONAL
     }
 
     /**
@@ -34,7 +34,7 @@ public interface Account {
      * Returns name of account
      *
      * <p>It should be equals to user name if it is {@link Type#PERSONAL} account
-     * or it should be equals to organization name if it is {@link Type#ORGANIZATION} account
+     * or it should be equals to organization name if it is {@link Type#ORGANIZATIONAL} account
      */
     String getName();
 

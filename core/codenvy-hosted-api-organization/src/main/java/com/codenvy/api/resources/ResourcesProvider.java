@@ -12,22 +12,17 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
+package com.codenvy.api.resources;
+
+import com.codenvy.api.resources.model.Resource;
+
+import java.util.List;
 
 /**
- * Describes license type
+ * Provides resources for account
  *
- * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public interface LicenseType {
-
-    /**
-     * Returns id of license type
-     */
-    String getId();
-
-    /**
-     * Returns human readable description
-     */
-    String getDescription();
+public interface ResourcesProvider {
+    List<Resource> getAvailableResources(String account);
 }

@@ -20,6 +20,7 @@ import org.eclipse.che.api.core.ServerException;
 
 import javax.inject.Inject;
 import javax.inject.Singleton;
+import java.util.List;
 
 /**
  * Responsible for registering resources consuming
@@ -42,10 +43,19 @@ public class UsageManager {
      * @param workspace
      *         id of workspace that start consume resources
      */
-    //TODO Should we start session before workspace starting?
-    //TODO Or maybe we should allocate resources and start session only after starting workspace
     public Session start(String user, String workspace) throws NotEnoughResourcesException,
                                                                ServerException {
+        //lock starting of session for current organizations tree
+        throw new UnsupportedOperationException();
+    }
+
+    /**
+     * Returns active sessions for given account
+     *
+     * @param account
+     *         id of account
+     */
+    public List<Session> getActiveSessions(String account) {
         throw new UnsupportedOperationException();
     }
 

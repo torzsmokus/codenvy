@@ -71,15 +71,11 @@ public class OrganizationManager {
     /**
      * Stores (adds or updates) member.
      *
-     * @param user
-     *         id of user
-     * @param organization
-     *         id of organization
-     * @param actions
-     *         list of actions which can be performed by user
+     * @param member
+     *         member to store
      * @return created member
      */
-    public Member storeMember(String user, String organization, List<String> actions) {
+    public Member storeMember(Member member) {
         throw new UnsupportedOperationException();
     }
 

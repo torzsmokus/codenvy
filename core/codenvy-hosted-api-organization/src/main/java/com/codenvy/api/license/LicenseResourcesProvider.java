@@ -12,22 +12,27 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
+package com.codenvy.api.license;
+
+import com.codenvy.api.resources.ResourcesProvider;
+import com.codenvy.api.resources.model.Resource;
+
+import javax.inject.Inject;
+import java.util.List;
 
 /**
- * Describes license type
- *
- * @author gazarenkov
+ * @author Sergii Leschenko
  */
-public interface LicenseType {
+public class LicenseResourcesProvider implements ResourcesProvider {
+    private final LicenseDao licenseDao;
 
-    /**
-     * Returns id of license type
-     */
-    String getId();
+    @Inject
+    public LicenseResourcesProvider(LicenseDao licenseDao) {
+        this.licenseDao = licenseDao;
+    }
 
-    /**
-     * Returns human readable description
-     */
-    String getDescription();
+    @Override
+    public List<Resource> getAvailableResources(String accountId) {
+        return licenseDao.getByOwner(accountId).getResources();
+    }
 }

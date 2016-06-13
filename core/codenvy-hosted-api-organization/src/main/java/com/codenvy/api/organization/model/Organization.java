@@ -31,4 +31,9 @@ public interface Organization {
      * Returns name of organization
      */
     String getName();
+
+    /**
+     * Returns id of parent organization
+     */
+    String getParent();
 }

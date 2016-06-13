@@ -12,27 +12,38 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.resources.model;
+package com.codenvy.api.account.impl;
+
+import com.codenvy.api.account.Account;
 
 /**
- * @author gazarenkov
  * @author Sergii Leschenko
  */
-public interface Resource {
-    /**
-     * Returns type of resources, e.g. RAM
-     */
-    String getType();
+public class AccountImpl implements Account {
+    private final String id;
+    private       String name;
+    private final Type   type;
 
-    /**
-     * Returns amount of resources
-     */
-    int getAmount();
+    public AccountImpl(String id, String name, Type type) {
+        this.id = id;
+        this.name = name;
+        this.type = type;
+    }
 
-    /**
-     * Returns unit of resources, e.g. for RAM type it should be equal to mb
-     *
-     * <p>Note: resources that has the same type should have the same unit
-     */
-    String getUnit();
+    @Override
+    public String getId() {
+        return id;
+    }
+
+    @Override
+    public String getName() {
+        return name;
+    }
+
+    @Override
+    public Type getType() {
+        return type;
+    }
+
+    //TODO Add hashCode, equals and toString methods
 }

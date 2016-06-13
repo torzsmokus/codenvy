@@ -14,13 +14,13 @@
  */
 package com.codenvy.api.license.model;
 
-import com.codenvy.api.account.Account;
 import com.codenvy.api.resources.model.Resource;
 
 import java.util.List;
+import java.util.Map;
 
 /**
- * Permits some identity use some resources
+ * Permits account use some resources
  *
  * @author gazarenkov
  * @author Sergii Leschenko
@@ -33,9 +33,9 @@ public interface License {
     String getId();
 
     /**
-     * Returns owner of license
+     * Returns id of account owner
      */
-    Account getOwner();
+    String getOwner();
 
     /**
      * Returns if of license type
@@ -56,4 +56,12 @@ public interface License {
      * Returns list of resources which can be used by owner
      */
     List<Resource> getResources();
+
+    /**
+     * Returns license's attributes
+     *
+     * <p>It can be used for storing additional options of license.
+     * For example, always on
+     */
+    Map<String, String> getAttributes();
 }
