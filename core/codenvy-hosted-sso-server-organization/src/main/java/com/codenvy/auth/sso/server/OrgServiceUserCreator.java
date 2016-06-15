@@ -26,7 +26,6 @@ import org.eclipse.che.api.user.server.UserManager;
 import org.eclipse.che.api.user.server.dao.PreferenceDao;
 import org.eclipse.che.api.user.server.dao.Profile;
 import org.eclipse.che.api.user.server.dao.User;
-import org.eclipse.che.api.user.server.dao.UserDao;
 import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.eclipse.che.commons.lang.NameGenerator;
 import org.slf4j.Logger;
@@ -45,18 +44,21 @@ import java.util.UUID;
 public class OrgServiceUserCreator implements UserCreator {
     private static final Logger LOG = LoggerFactory.getLogger(OrgServiceUserCreator.class);
 
-    @Inject
-    private UserManager userManager;
+    private final UserManager userManager;
+    private final UserProfileDao profileDao;
+    private final PreferenceDao preferenceDao;
+    private final boolean userSelfCreationAllowed;
 
     @Inject
-    private UserProfileDao profileDao;
-
-    @Inject
-    private PreferenceDao preferenceDao;
-
-    @Inject
-    @Named("user.self.creation.allowed")
-    private boolean userSelfCreationAllowed;
+    public OrgServiceUserCreator(UserManager userManager,
+                                 UserProfileDao profileDao,
+                                 PreferenceDao preferenceDao,
+                                 @Named("user.self.creation.allowed") boolean userSelfCreationAllowed) {
+        this.userManager = userManager;
+        this.profileDao = profileDao;
+        this.preferenceDao = preferenceDao;
+        this.userSelfCreationAllowed = userSelfCreationAllowed;
+    }
 
     @Override
     public User createUser(String email, String userName, String firstName, String lastName) throws IOException {
@@ -84,7 +86,7 @@ public class OrgServiceUserCreator implements UserCreator {
             try {
 
                 while (!createNonReservedUser(id, userName, email, password)) {
-                    NameGenerator.generate(userName, 4);
+                    userName = NameGenerator.generate(userName, 4);
                 }
                 profileDao.create(profile);
 
@@ -154,8 +156,7 @@ public class OrgServiceUserCreator implements UserCreator {
                                          .withPassword(password), false);
             return true;
         } catch (ServerException e) {
-            e.printStackTrace();
-            return false;
+            throw e;
         } catch (ConflictException e) {
             return false;
         }

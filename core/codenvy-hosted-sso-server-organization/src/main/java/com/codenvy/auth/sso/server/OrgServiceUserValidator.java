@@ -27,7 +27,7 @@ import org.eclipse.che.api.user.server.dao.UserDao;
 import javax.inject.Inject;
 import javax.inject.Named;
 
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 
 import static com.google.common.base.Strings.isNullOrEmpty;
@@ -50,7 +50,7 @@ public class OrgServiceUserValidator implements UserCreationValidator {
         this.userDao = userDao;
         this.userNameValidator = userNameValidator;
         this.userSelfCreationAllowed = userSelfCreationAllowed;
-        this.reservedNames = Sets.newHashSet(Arrays.asList(reservedNames));
+        this.reservedNames = Sets.newHashSet(reservedNames);
     }
 
     @Override
