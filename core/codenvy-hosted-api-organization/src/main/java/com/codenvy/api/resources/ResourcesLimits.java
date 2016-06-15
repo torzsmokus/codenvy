@@ -12,29 +12,17 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license;
+package com.codenvy.api.resources;
 
-import com.codenvy.api.resources.ResourcesProvider;
-import com.codenvy.api.resources.model.Resource;
-
-import org.eclipse.che.api.core.NotFoundException;
-
-import javax.inject.Inject;
-import java.util.List;
+import org.aopalliance.intercept.MethodInterceptor;
+import org.aopalliance.intercept.MethodInvocation;
 
 /**
  * @author Sergii Leschenko
  */
-public class LicenseResourcesProvider implements ResourcesProvider {
-    private final LicenseDao licenseDao;
-
-    @Inject
-    public LicenseResourcesProvider(LicenseDao licenseDao) {
-        this.licenseDao = licenseDao;
-    }
-
+public class ResourcesLimits implements MethodInterceptor {
     @Override
-    public List<Resource> getAvailableResources(String accountId) throws NotFoundException {
-        return licenseDao.getByOwner(accountId).getResources();
+    public Object invoke(MethodInvocation methodInvocation) throws Throwable {
+        return null;
     }
 }

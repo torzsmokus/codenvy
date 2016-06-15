@@ -16,6 +16,8 @@ package com.codenvy.api.organization.model.impl;
 
 import com.codenvy.api.organization.model.Organization;
 
+import java.util.Objects;
+
 /**
  * @author Sergii Leschenko
  */
@@ -50,5 +52,31 @@ public class OrganizationImpl implements Organization {
         return parent;
     }
 
-    //TODO Add hashCode, equals and toString methods
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof OrganizationImpl)) return false;
+        final OrganizationImpl other = (OrganizationImpl)obj;
+        return Objects.equals(name, other.name)
+               && Objects.equals(id, other.id)
+               && Objects.equals(parent, other.parent);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + Objects.hashCode(name);
+        hash = 31 * hash + Objects.hashCode(id);
+        hash = 31 * hash + Objects.hashCode(parent);
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "OrganizationImpl{" +
+               "name='" + name + '\'' +
+               ", id='" + id + '\'' +
+               ", parent='" + parent + '\'' +
+               '}';
+    }
 }

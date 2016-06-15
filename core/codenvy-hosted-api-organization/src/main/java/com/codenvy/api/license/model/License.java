@@ -55,7 +55,7 @@ public interface License {
     /**
      * Returns list of resources which can be used by owner
      */
-    List<Resource> getResources();
+    List<? extends Resource> getResources();
 
     /**
      * Returns license's attributes

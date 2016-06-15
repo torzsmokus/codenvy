@@ -15,6 +15,7 @@
 package com.codenvy.api.account.impl;
 
 import com.codenvy.api.account.Account;
+import com.google.common.base.Objects;
 
 /**
  * @author Sergii Leschenko
@@ -45,5 +46,27 @@ public class AccountImpl implements Account {
         return type;
     }
 
-    //TODO Add hashCode, equals and toString methods
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof AccountImpl)) return false;
+        AccountImpl account = (AccountImpl)o;
+        return Objects.equal(id, account.id) &&
+               Objects.equal(name, account.name) &&
+               Objects.equal(type, account.type);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hashCode(id, name, type);
+    }
+
+    @Override
+    public String toString() {
+        return "AccountImpl{" +
+               "id='" + id + '\'' +
+               ", name='" + name + '\'' +
+               ", type=" + type +
+               '}';
+    }
 }

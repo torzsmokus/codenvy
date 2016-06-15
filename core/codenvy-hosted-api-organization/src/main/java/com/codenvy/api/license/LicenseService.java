@@ -14,27 +14,21 @@
  */
 package com.codenvy.api.license;
 
-import com.codenvy.api.resources.ResourcesProvider;
-import com.codenvy.api.resources.model.Resource;
+import com.codenvy.api.shared.dto.LicenseDto;
 
-import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.rest.Service;
 
-import javax.inject.Inject;
-import java.util.List;
+import javax.ws.rs.GET;
+import javax.ws.rs.Path;
 
 /**
  * @author Sergii Leschenko
  */
-public class LicenseResourcesProvider implements ResourcesProvider {
-    private final LicenseDao licenseDao;
-
-    @Inject
-    public LicenseResourcesProvider(LicenseDao licenseDao) {
-        this.licenseDao = licenseDao;
-    }
-
-    @Override
-    public List<Resource> getAvailableResources(String accountId) throws NotFoundException {
-        return licenseDao.getByOwner(accountId).getResources();
+@Path("license")
+public class LicenseService extends Service {
+    @GET
+    @Path("{account}")
+    public LicenseDto getLicense() {
+        return null;
     }
 }

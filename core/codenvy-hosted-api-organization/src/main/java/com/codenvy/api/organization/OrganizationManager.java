@@ -14,10 +14,18 @@
  */
 package com.codenvy.api.organization;
 
-import com.codenvy.api.organization.model.Member;
 import com.codenvy.api.organization.model.Organization;
+import com.codenvy.api.organization.model.impl.MemberImpl;
+import com.codenvy.api.organization.model.impl.OrganizationImpl;
 
+import org.eclipse.che.api.core.ConflictException;
+import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.commons.lang.NameGenerator;
+
+import javax.inject.Inject;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Facade for Organization related operations.
@@ -27,6 +35,15 @@ import java.util.List;
  */
 public class OrganizationManager {
 
+    private final OrganizationDao organizationDao;
+    private final MemberDao       memberDao;
+
+    @Inject
+    public OrganizationManager(OrganizationDao organizationDao, MemberDao memberDao) {
+        this.organizationDao = organizationDao;
+        this.memberDao = memberDao;
+    }
+
     /**
      * Create new organization with given name
      *
@@ -34,8 +51,10 @@ public class OrganizationManager {
      *         name of organization
      * @return created organization
      */
-    public Organization create(String name) {
-        throw new UnsupportedOperationException();
+    public OrganizationImpl create(String name) throws ConflictException {
+        final OrganizationImpl organization = new OrganizationImpl(name, NameGenerator.generate("organization", 16), null);
+        organizationDao.create(organization);
+        return organization;
     }
 
     /**
@@ -44,8 +63,8 @@ public class OrganizationManager {
      * @param organization
      *         id of organization
      */
-    public Organization getById(String organization) {
-        throw new UnsupportedOperationException();
+    public OrganizationImpl getById(String organization) throws NotFoundException {
+        return organizationDao.getById(organization);
     }
 
     /**
@@ -55,7 +74,7 @@ public class OrganizationManager {
      *         id of parent organization
      */
     public List<Organization> getByParent(String parent) {
-        throw new UnsupportedOperationException();
+        return organizationDao.getByParent(parent);
     }
 
     /**
@@ -64,50 +83,23 @@ public class OrganizationManager {
      * @param organization
      *         id of organization that should be removed
      */
-    public void remove(String organization) {
-        throw new UnsupportedOperationException();
+    public void remove(String organization) throws NotFoundException {
+        organizationDao.remove(organization);
     }
 
-    /**
-     * Stores (adds or updates) member.
-     *
-     * @param member
-     *         member to store
-     * @return created member
-     */
-    public Member storeMember(Member member) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Returns all members of given organization
-     *
-     * @param organization
-     *         id of organization
-     */
-    public List<Member> getMembers(String organization) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Returns all members for given user
-     *
-     * @param user
-     *         id of user
-     */
-    public List<Member> getMemberships(String user) {
-        throw new UnsupportedOperationException();
-    }
-
-    /**
-     * Remove member with given organization and user
-     *
-     * @param organization
-     *         id of organization
-     * @param user
-     *         id of user
-     */
-    public void removeMember(String organization, String user) {
-        throw new UnsupportedOperationException();
+    public List<OrganizationImpl> getByMember(String userId) {
+        final List<String> organizationsIds = memberDao.getMemberships(userId)
+                                                       .stream()
+                                                       .map(MemberImpl::getOrganization)
+                                                       .collect(Collectors.toList());
+        List<OrganizationImpl> result = new ArrayList<>();
+        for (String organizationsId : organizationsIds) {
+            try {
+                result.add(organizationDao.getById(organizationsId));
+            } catch (NotFoundException e) {
+                //TODO Write warning
+            }
+        }
+        return result;
     }
 }

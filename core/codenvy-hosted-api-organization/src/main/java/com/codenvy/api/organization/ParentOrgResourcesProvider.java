@@ -22,6 +22,8 @@ import com.codenvy.api.resources.ResourcesManager;
 import com.codenvy.api.resources.ResourcesProvider;
 import com.codenvy.api.resources.model.Resource;
 
+import org.eclipse.che.api.core.NotFoundException;
+
 import javax.inject.Inject;
 import java.util.Collections;
 import java.util.List;
@@ -46,7 +48,7 @@ public class ParentOrgResourcesProvider implements ResourcesProvider {
     }
 
     @Override
-    public List<Resource> getAvailableResources(String accountId) {
+    public List<Resource> getAvailableResources(String accountId) throws NotFoundException {
         final Account account = accountManager.getById(accountId);
         if (Type.ORGANIZATIONAL.equals(account.getType())) {
             final Organization organization = organizationManager.getById(account.getName());

@@ -16,6 +16,8 @@ package com.codenvy.api.resources;
 
 import com.codenvy.api.resources.model.Resource;
 
+import org.eclipse.che.api.core.NotFoundException;
+
 import java.util.List;
 
 /**
@@ -24,5 +26,5 @@ import java.util.List;
  * @author Sergii Leschenko
  */
 public interface ResourcesProvider {
-    List<Resource> getAvailableResources(String account);
+    List<Resource> getAvailableResources(String account) throws NotFoundException;
 }

@@ -17,6 +17,7 @@ package com.codenvy.api.organization.model.impl;
 import com.codenvy.api.organization.model.Member;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Sergii Leschenko
@@ -47,5 +48,31 @@ public class MemberImpl implements Member {
         return actions;
     }
 
-    //TODO Add hashCode, equals and toString methods
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;
+        if (!(obj instanceof MemberImpl)) return false;
+        final MemberImpl other = (MemberImpl)obj;
+        return Objects.equals(user, other.user)
+               && Objects.equals(organization, other.organization)
+               && actions.equals(other.actions);
+    }
+
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 31 * hash + Objects.hashCode(user);
+        hash = 31 * hash + Objects.hashCode(organization);
+        hash = 31 * hash + actions.hashCode();
+        return hash;
+    }
+
+    @Override
+    public String toString() {
+        return "MemberImpl{" +
+               "user='" + user + '\'' +
+               ", organization='" + organization + '\'' +
+               ", actions=" + actions +
+               '}';
+    }
 }

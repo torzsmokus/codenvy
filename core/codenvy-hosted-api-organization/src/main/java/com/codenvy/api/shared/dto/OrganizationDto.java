@@ -12,29 +12,35 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license;
+package com.codenvy.api.shared.dto;
 
-import com.codenvy.api.resources.ResourcesProvider;
-import com.codenvy.api.resources.model.Resource;
+import com.codenvy.api.organization.model.Organization;
 
-import org.eclipse.che.api.core.NotFoundException;
-
-import javax.inject.Inject;
-import java.util.List;
+import org.eclipse.che.dto.shared.DTO;
 
 /**
  * @author Sergii Leschenko
  */
-public class LicenseResourcesProvider implements ResourcesProvider {
-    private final LicenseDao licenseDao;
+@DTO
+public interface OrganizationDto extends Organization {
+    @Override
+    String getId();
 
-    @Inject
-    public LicenseResourcesProvider(LicenseDao licenseDao) {
-        this.licenseDao = licenseDao;
-    }
+    void setId(String id);
+
+    OrganizationDto withId(String id);
 
     @Override
-    public List<Resource> getAvailableResources(String accountId) throws NotFoundException {
-        return licenseDao.getByOwner(accountId).getResources();
-    }
+    String getName();
+
+    void setName(String name);
+
+    OrganizationDto withName(String name);
+
+    @Override
+    String getParent();
+
+    void setParent(String parent);
+
+    OrganizationDto withParent(String parent);
 }
