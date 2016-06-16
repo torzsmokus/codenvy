@@ -148,7 +148,7 @@ public class OrgServiceUserCreator implements UserCreator {
         }
     }
 
-    private boolean createNonReservedUser(String id, String username, String email, String password) throws ServerException{
+    private boolean createNonReservedUser(String id, String username, String email, String password) throws ServerException {
         try {
             userManager.create(new User().withId(id)
                                          .withName(username)

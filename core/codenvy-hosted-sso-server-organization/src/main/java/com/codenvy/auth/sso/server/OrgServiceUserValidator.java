@@ -72,7 +72,7 @@ public class OrgServiceUserValidator implements UserCreationValidator {
         }
 
         if (reservedNames.contains(userName)) {
-            throw new ConflictException("User name is reserved. Please, choose another one");
+            throw new ConflictException(String.format("User name \"%s\" is reserved. Please, choose another one", userName));
         }
 
         try {
