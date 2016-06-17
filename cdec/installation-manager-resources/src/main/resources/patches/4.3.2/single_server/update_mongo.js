@@ -34,6 +34,7 @@ var createPermissions = function(){
 createPermissions();
 
 // ---------------------------------------------
+
 var checkActions = function(actions, objectType, id) {
   var result = [];
   for (var i = 0; i < actions.length; i++) {
@@ -67,17 +68,32 @@ var createAcl = function(collectionName, objectType){
 
     permissions.groups.forEach(function(group) {
       if (group.name != "public") {
-        print("Unknown group name " + group.name + " in "+objectType+" with id "
-        + object._id+". It will be ignored.");
-      } else {
-        acl.push({"user":"*", "actions": checkActions(group.acl)});
+        print("Unknown group name " + group.name + " in " + objectType + " with id "
+        + object._id + ". It will be ignored.");
+      } else if (group.acl.indexOf("search") > -1) {
+          //public search is similar to 'public' (user:*) read in 4.3
+          //we don't support other public actions in 4.3
+          acl.push({"user":"*", "actions": ["read"]});
+        }
       }
-    });
+    );
 
     for (var user in permissions.users) {
       var actions = checkActions(permissions.users[user]);
       acl.push({"user": user, "actions": actions});
     }
+
+    //remove old creator's permissions
+    var creator = object.creator;
+    for (var i = 0; i < acl.length; i++) {
+      var aclEntry = acl[i];
+      if (aclEntry.user == creator) {
+        acl.splice(i, 1);
+      }
+    }
+
+    //add creator permissions
+    acl.push({"user":creator, "actions":["read", "update", "delete", "setPermissions"]});
 
     delete object.permissions;
     object.acl = acl;
@@ -93,6 +109,7 @@ createAcl("recipes", "recipe");
 createAcl("stacks", "stack");
 
 // ---------------------------------------------
+
 var updateOrganization = function(){
     var organizationDb = db.getSiblingDB("organization");
     var ssh = organizationDb.getCollection("ssh");
@@ -165,42 +182,54 @@ var updateSnapshots = function(){
 
     var organizationDb = db.getSiblingDB("organization");
     organizationDb.snapshots.find().snapshot().forEach(
-        function (snapshot) {
-            var registry = organizationDb.snapshots.findOne(
-                                 {_id: snapshot._id},
-                                 {instanceKey: {$elemMatch: {name: "registry"}}}).instanceKey[0].value;
+    function (snapshot) {
+         var repository = organizationDb.snapshots.findOne(
+                             {_id: snapshot._id},
+                             {instanceKey: {$elemMatch: {name: "repository"}}}).instanceKey[0].value;
+         try {
+         var registry = organizationDb.snapshots.findOne(
+                             {_id: snapshot._id},
+                             {instanceKey: {$elemMatch: {name: "registry"}}}).instanceKey[0].value;
+         } catch (err) {}
+         try {
+         var tag = organizationDb.snapshots.findOne(
+                             {_id: snapshot._id},
+                             {instanceKey: {$elemMatch: {name: "tag"}}}).instanceKey[0].value;
+         } catch (err) {}
+         try {
+         var digest = organizationDb.snapshots.findOne(
+                             {_id: snapshot._id},
+                             {instanceKey: {$elemMatch: {name: "digest"}}}).instanceKey[0].value;
+         } catch (err) {}
+         var location = repository;
+         if (typeof registry != 'undefined') {
+           location = registry + '/' + location;
+         }
+         if (typeof tag != 'undefined') {
+            location = location + ':' + tag;
+         }
+         if (typeof digest != 'undefined') {
+            location = location + '@' + digest;
+         }
 
-            var repository = organizationDb.snapshots.findOne(
-                                 {_id: snapshot._id},
-                                 {instanceKey: {$elemMatch: {name: "repository"}}}).instanceKey[0].value;
+        print("Found snapshot: " + snapshot._id);
 
-
-            var tag = organizationDb.snapshots.findOne(
-                                 {_id: snapshot._id},
-                                 {instanceKey: {$elemMatch: {name: "tag"}}}).instanceKey[0].value;
-
-            var digest = organizationDb.snapshots.findOne(
-                                 {_id: snapshot._id},
-                                 {instanceKey: {$elemMatch: {name: "digest"}}}).instanceKey[0].value;
-
-            print("Found snapshot: " + snapshot._id);
-
-            organizationDb.snapshots.update(
-                {
-                    _id: snapshot._id
-                },
-                {
-                        $set: {"machineSource" : {
-                                                  "type" : "image",
-                                                  "location": registry + '/' + repository + ':' + tag + '@' + digest,
-                                                  "content" : null
-                                                  }
-                             },
-                        $unset: {"instanceKey" : 1}
-                }
-            );
-        }
-    );
+        organizationDb.snapshots.update(
+            {
+                _id: snapshot._id
+            },
+            {
+                    $set: {"machineSource" : {
+                                              "type" : "image",
+                                              "location": location,
+                                              "content" : ""
+                                              }
+                         },
+                     $unset: {"instanceKey" : 1}
+            }
+        );
+      }
+   );
 }
 
 updateSnapshots();
