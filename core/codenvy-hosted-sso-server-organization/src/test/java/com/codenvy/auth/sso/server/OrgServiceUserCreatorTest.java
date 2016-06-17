@@ -23,6 +23,7 @@ import org.eclipse.che.api.user.server.dao.UserProfileDao;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.testng.MockitoTestNGListener;
+import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.Listeners;
 import org.testng.annotations.Test;
 
@@ -51,11 +52,18 @@ public class OrgServiceUserCreatorTest {
     @Mock
     PreferenceDao preferenceDao;
 
+    OrgServiceUserCreator creator;
+
+    @BeforeMethod
+    public void setUp() {
+        creator = new OrgServiceUserCreator(manager, profileDao, preferenceDao, true);
+    }
+
     @Test
     public void shouldCreateUser() throws Exception {
         doThrow(NotFoundException.class).when(manager).getByAlias(anyObject());
 
-        new OrgServiceUserCreator(manager, profileDao, preferenceDao, true).createUser("user@codenvy.com", "test", "John", "Doe");
+        creator.createUser("user@codenvy.com", "test", "John", "Doe");
 
         ArgumentCaptor<User> user = ArgumentCaptor.forClass(User.class);
         verify(manager).create(user.capture(), eq(false));
@@ -74,7 +82,7 @@ public class OrgServiceUserCreatorTest {
             return null;
         }).when(manager).create(anyObject(), anyBoolean());
 
-        new OrgServiceUserCreator(manager, profileDao, preferenceDao, true).createUser("user@codenvy.com", "reserved", "John", "Doe");
+        creator.createUser("user@codenvy.com", "reserved", "John", "Doe");
 
         ArgumentCaptor<User> user = ArgumentCaptor.forClass(User.class);
         verify(manager, times(2)).create(user.capture(), eq(false));

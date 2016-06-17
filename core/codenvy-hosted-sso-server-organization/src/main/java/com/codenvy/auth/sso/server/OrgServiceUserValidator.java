@@ -71,7 +71,7 @@ public class OrgServiceUserValidator implements UserCreationValidator {
             throw new BadRequestException("User name must contain letters and digits only");
         }
 
-        if (reservedNames.contains(userName)) {
+        if (reservedNames.contains(userName.toLowerCase())) {
             throw new ConflictException(String.format("User name \"%s\" is reserved. Please, choose another one", userName));
         }
 
