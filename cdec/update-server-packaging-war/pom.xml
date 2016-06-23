@@ -27,21 +27,21 @@
     <name>Codenvy :: IM :: Update Server War Assembly</name>
     <dependencies>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.im</groupId>
+            <artifactId>installation-manager-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-mail-client</artifactId>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-mail-server</artifactId>
             <type>war</type>
         </dependency>
         <dependency>
-            <groupId>com.codenvy.hosted-infrastructure</groupId>
+            <groupId>com.codenvy.onpremises.wsmaster</groupId>
             <artifactId>codenvy-hosted-sso-client</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.codenvy.im</groupId>
-            <artifactId>installation-manager-core</artifactId>
         </dependency>
         <dependency>
             <groupId>commons-fileupload</groupId>
