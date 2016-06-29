@@ -50,7 +50,7 @@ public class OrgServiceAuthenticationHandler implements AuthenticationHandler {
         }
 
         try {
-            String userId = userDao.authenticate(login, password);
+            String userId = userDao.getByAliasAndPassword(login, password);
             String userName = userDao.getById(userId).getName();
             return new SubjectImpl(userName, userId, null, Collections.<String>emptyList(), false);
         } catch (ApiException e) {

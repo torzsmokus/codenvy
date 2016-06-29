@@ -23,7 +23,7 @@ import org.eclipse.che.api.user.server.spi.ProfileDao;
 import org.eclipse.che.api.user.server.spi.UserDao;
 import org.eclipse.che.commons.lang.Pair;
 import org.eclipse.che.commons.test.tck.TckModule;
-import org.eclipse.che.commons.test.tck.TckRepository;
+import org.eclipse.che.commons.test.tck.repository.TckRepository;
 
 import static com.codenvy.api.dao.ldap.LdapEmbeddedServerListener.LDAP_SERVER_URL_ATTRIBUTE_NAME;
 
@@ -35,7 +35,7 @@ public class LdapTckModule extends TckModule {
     @Override
     public void configure() {
         final InitialLdapContextFactory contextFactory =
-                new InitialLdapContextFactory(() -> testContext.getAttribute(LDAP_SERVER_URL_ATTRIBUTE_NAME).toString(),
+                new InitialLdapContextFactory(() -> getTestContext().getAttribute(LDAP_SERVER_URL_ATTRIBUTE_NAME).toString(),
                                               null,
                                               null,
                                               null,

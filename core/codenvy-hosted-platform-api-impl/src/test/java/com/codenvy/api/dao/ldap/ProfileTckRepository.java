@@ -18,7 +18,7 @@ import com.codenvy.api.dao.ldap.LdapCloser.CloseableSupplier;
 
 import org.eclipse.che.api.user.server.model.impl.ProfileImpl;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
-import org.eclipse.che.commons.test.tck.TckRepositoryException;
+import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
 
 import javax.inject.Inject;
 import javax.naming.NamingException;
@@ -27,7 +27,7 @@ import javax.naming.ldap.InitialLdapContext;
 import java.util.Collection;
 import java.util.Collections;
 
-import static com.codenvy.api.dao.ldap.LdapCloser.deferClose;
+import static com.codenvy.api.dao.ldap.LdapCloser.wrapCloseable;
 import static java.util.Collections.singletonMap;
 import static java.util.stream.Collectors.toList;
 
@@ -63,7 +63,7 @@ public class ProfileTckRepository extends AbstractLdapTckRepository<ProfileImpl>
                                                                          Collections.emptyList()))
                                             .collect(toList()));
         for (ProfileImpl profile : profiles) {
-            try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+            try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
                 final InitialLdapContext context = contextSup.get();
                 final ModificationItem[] modifications = mapper.createModifications(singletonMap("lastName", "<none>"),
                                                                                     profile.getAttributes());

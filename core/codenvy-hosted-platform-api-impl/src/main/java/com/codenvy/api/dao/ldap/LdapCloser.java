@@ -42,7 +42,7 @@ public final class LdapCloser {
      *         the type of the elements in the enumeration
      * @return {@code CloseableSupplier} supplying the given {@code enumeration} and closing it
      */
-    public static <T> CloseableSupplier<NamingEnumeration<T>> deferClose(NamingEnumeration<T> enumeration) {
+    public static <T> CloseableSupplier<NamingEnumeration<T>> wrapCloseable(NamingEnumeration<T> enumeration) {
         return new CloseableSupplier<>(enumeration, () -> close(enumeration));
     }
 
@@ -56,7 +56,7 @@ public final class LdapCloser {
      *         the type of the context
      * @return {@code CloseableSupplier} supplying the given {@code context} and closing it
      */
-    public static <T extends Context> CloseableSupplier<T> deferClose(T context) {
+    public static <T extends Context> CloseableSupplier<T> wrapCloseable(T context) {
         return new CloseableSupplier<>(context, () -> close(context));
     }
 
@@ -109,7 +109,7 @@ public final class LdapCloser {
      *
      * <p>Example:
      * <pre>{@code
-     *      try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+     *      try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
      *          InitialLdapContext context = contextSup.get();
      *          // use context
      *      }

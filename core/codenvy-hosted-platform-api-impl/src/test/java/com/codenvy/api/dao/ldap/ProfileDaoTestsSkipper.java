@@ -56,7 +56,9 @@ public class ProfileDaoTestsSkipper implements IAnnotationTransformer {
 
     @Override
     public void transform(ITestAnnotation annotation, Class testClass, Constructor testConstructor, Method testMethod) {
-        if (testClass != ProfileDaoTest.class || testMethod != null && skipTestMethodNames.contains(testMethod.getName())) {
+        if (testMethod != null
+            && testMethod.getDeclaringClass() == ProfileDaoTest.class
+            && skipTestMethodNames.contains(testMethod.getName())) {
             annotation.setEnabled(false);
         }
     }

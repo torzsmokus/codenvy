@@ -16,8 +16,8 @@ package com.codenvy.api.dao.ldap;
 
 import com.codenvy.api.dao.ldap.LdapCloser.CloseableSupplier;
 
-import org.eclipse.che.commons.test.tck.TckRepository;
-import org.eclipse.che.commons.test.tck.TckRepositoryException;
+import org.eclipse.che.commons.test.tck.repository.TckRepository;
+import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
 
 import javax.naming.NamingEnumeration;
 import javax.naming.NamingException;
@@ -50,7 +50,7 @@ public abstract class AbstractLdapTckRepository<T> implements TckRepository<T> {
     @Override
     public void removeAll() throws TckRepositoryException {
         for (String id : getAllIds()) {
-            try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+            try (CloseableSupplier<InitialLdapContext> contextSup = LdapCloser.wrapCloseable(contextFactory.createContext())) {
                 contextSup.get().destroySubcontext(normalizeDn(id));
             } catch (NamingException x) {
                 throw new TckRepositoryException(x.getMessage(), x);
@@ -64,14 +64,14 @@ public abstract class AbstractLdapTckRepository<T> implements TckRepository<T> {
 
     private List<String> getAllIds() throws TckRepositoryException {
         final List<String> result = new LinkedList<>();
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (CloseableSupplier<InitialLdapContext> contextSup = LdapCloser.wrapCloseable(contextFactory.createContext())) {
             // Configure search controls
             final SearchControls controls = new SearchControls();
             controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
             controls.setReturningAttributes(new String[] {dn});
 
             // Search the entities
-            try (CloseableSupplier<NamingEnumeration<SearchResult>> enumSup = deferClose(
+            try (CloseableSupplier<NamingEnumeration<SearchResult>> enumSup = wrapAutoCloseable(
                     contextSup.get().search(containerDn, "(objectClass=" + objectClass[0] + ')', controls))) {
                 final NamingEnumeration<SearchResult> searchRes = enumSup.get();
                 while (searchRes.hasMore()) {

@@ -64,7 +64,7 @@ import static org.eclipse.che.dto.server.DtoFactory.newDto;
 
 
 /**
- * Service to authenticate users using bearer tokens.
+ * Service to getByAliasAndPassword users using bearer tokens.
  * <p/>
  *
  * @author Alexander Garagatyi

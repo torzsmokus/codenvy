@@ -15,13 +15,12 @@
 package com.codenvy.api.dao.ldap;
 
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
-import org.eclipse.che.commons.test.tck.TckRepositoryException;
+import org.eclipse.che.commons.test.tck.repository.TckRepositoryException;
 
 import javax.inject.Inject;
 import javax.inject.Named;
 import javax.naming.NamingException;
 import javax.naming.directory.Attributes;
-import javax.naming.directory.DirContext;
 import javax.naming.ldap.InitialLdapContext;
 import java.util.Collection;
 
@@ -45,7 +44,7 @@ public class UserTckRepository extends AbstractLdapTckRepository<UserImpl> {
 
     @Override
     public void createAll(Collection<? extends UserImpl> entities) throws TckRepositoryException {
-        try (LdapCloser.CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (LdapCloser.CloseableSupplier<InitialLdapContext> contextSup = LdapCloser.wrapCloseable(contextFactory.createContext())) {
             for (UserImpl user : entities) {
                 try {
                     final Attributes attributes = mapper.toAttributes(user);

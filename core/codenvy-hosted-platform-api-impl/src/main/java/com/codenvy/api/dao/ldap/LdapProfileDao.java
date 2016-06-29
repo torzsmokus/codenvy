@@ -79,7 +79,7 @@ public class LdapProfileDao implements ProfileDao {
         try {
             final ModificationItem[] mods = attributesMapper.createModifications(existing.getAttributes(), profile.getAttributes());
             if (mods.length > 0) {
-                try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+                try (CloseableSupplier<InitialLdapContext> contextSup = LdapCloser.wrapCloseable(contextFactory.createContext())) {
                     contextSup.get().modifyAttributes(attributesMapper.getProfileDn(id), mods);
                 }
             }
@@ -103,7 +103,7 @@ public class LdapProfileDao implements ProfileDao {
     }
 
     private ProfileImpl doGetById(String id) throws NamingException {
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext()))  {
+        try (CloseableSupplier<InitialLdapContext> contextSup = LdapCloser.wrapCloseable(contextFactory.createContext()))  {
             final Attributes attributes = getProfileAttributes(contextSup.get(), id);
             if (attributes != null) {
                 return attributesMapper.asProfile(attributes);

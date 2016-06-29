@@ -20,13 +20,10 @@ import com.codenvy.api.event.user.RemoveUserEvent;
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
 import org.eclipse.che.api.core.ServerException;
-import org.eclipse.che.api.core.UnauthorizedException;
 import org.eclipse.che.api.core.model.user.User;
 import org.eclipse.che.api.core.notification.EventService;
 import org.eclipse.che.api.user.server.model.impl.UserImpl;
 import org.eclipse.che.api.user.server.spi.UserDao;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -46,6 +43,8 @@ import java.util.Set;
 
 import static com.codenvy.api.dao.ldap.LdapCloser.close;
 import static com.codenvy.api.dao.ldap.LdapCloser.deferClose;
+import static com.codenvy.api.dao.ldap.LdapCloser.wrapAutoCloseable;
+import static com.codenvy.api.dao.ldap.LdapCloser.wrapCloseable;
 import static java.lang.String.format;
 import static java.util.Objects.requireNonNull;
 
@@ -96,7 +95,7 @@ public class LdapUserDao implements UserDao {
     }
 
     @Override
-    public String authenticate(String alias, String password) throws UnauthorizedException, ServerException {
+    public UserImpl getByAliasAndPassword(String alias, String password) throws NotFoundException, ServerException {
         requireNonNull(alias, "Required non-null alias");
         requireNonNull(password, "Required non-null password");
         UserImpl user;
@@ -109,19 +108,19 @@ public class LdapUserDao implements UserDao {
                 user = doGetByAttribute(mapper.userAliasesAttr, alias);
             }
             if (user == null) {
-                throw new UnauthorizedException(format("Authentication failed for user '%s'", alias));
+                throw new NotFoundException(format("User '%s' doesn't exist", alias));
             }
             final String principal = formatDn(userDn, user.getId());
-            try (CloseableSupplier<InitialLdapContext> ignored = deferClose(contextFactory.createContext(principal, password))) {
-                return user.getId();
+            try (CloseableSupplier<InitialLdapContext> ignored = wrapCloseable(contextFactory.createContext(principal, password))) {
+                return user;
             } catch (AuthenticationException e) {
                 //if first time authentication failed, try to rename user entity
                 doGetById(user.getId());
                 //retry authentication
-                try (CloseableSupplier<InitialLdapContext> ignored = deferClose(contextFactory.createContext(principal, password))) {
-                    return user.getId();
+                try (CloseableSupplier<InitialLdapContext> ignored = wrapCloseable(contextFactory.createContext(principal, password))) {
+                    return user;
                 } catch (AuthenticationException e2) {
-                    throw new UnauthorizedException(format("Authentication failed for user '%s'", principal));
+                    throw new NotFoundException(format("User '%s' doesn't exist", principal));
                 }
             }
         } catch (NamingException e) {
@@ -132,7 +131,7 @@ public class LdapUserDao implements UserDao {
     @Override
     public void create(UserImpl user) throws ConflictException, ServerException {
         requireNonNull(user, "Required non-null user");
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
             final String email = user.getEmail();
             if (email != null && doGetByAttribute(mapper.userEmailAttr, email) != null) {
                 throw new ConflictException(format("User with email '%s' already exists", email));
@@ -189,7 +188,7 @@ public class LdapUserDao implements UserDao {
 
             final ModificationItem[] mods = mapper.createModifications(target, update);
             if (mods.length > 0) {
-                try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+                try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
                     contextSup.get().modifyAttributes(formatDn(userDn, id), mods);
                 } catch (NamingException e) {
                     throw new ServerException(format("Unable update (user) '%s'", update.getEmail()), e);
@@ -203,7 +202,7 @@ public class LdapUserDao implements UserDao {
     @Override
     public void remove(String id) throws ServerException, ConflictException {
         requireNonNull(id, "Required non-null id");
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
             contextSup.get().destroySubcontext(formatDn(userDn, id));
             eventService.publish(new RemoveUserEvent(id));
         } catch (NameNotFoundException e) {
@@ -270,7 +269,7 @@ public class LdapUserDao implements UserDao {
     }
 
     private UserImpl doGetByAttribute(String name, String value) throws NamingException {
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
             final Attributes attributes = getUserAttributesByFilter(contextSup.get(), createFilter(name, value));
             if (attributes != null) {
                 return mapper.fromAttributes(attributes);
@@ -280,7 +279,7 @@ public class LdapUserDao implements UserDao {
     }
 
     private UserImpl doGetById(String id) throws NamingException {
-        try (CloseableSupplier<InitialLdapContext> contextSup = deferClose(contextFactory.createContext())) {
+        try (CloseableSupplier<InitialLdapContext> contextSup = wrapCloseable(contextFactory.createContext())) {
             final Attributes attributes = getUserAttributesById(contextSup.get(), id);
             if (attributes != null) {
                 return mapper.fromAttributes(attributes);
@@ -321,7 +320,7 @@ public class LdapUserDao implements UserDao {
     private Attributes getUserAttributesByFilter(InitialLdapContext context, String filter) throws NamingException {
         final SearchControls controls = new SearchControls();
         controls.setSearchScope(SearchControls.SUBTREE_SCOPE);
-        try (CloseableSupplier<NamingEnumeration<SearchResult>> enumSup = deferClose(context.search(containerDn, filter, controls))) {
+        try (CloseableSupplier<NamingEnumeration<SearchResult>> enumSup = wrapCloseable(context.search(containerDn, filter, controls))) {
             final NamingEnumeration<SearchResult> enumeration = enumSup.get();
             if (enumeration.hasMore()) {
                 return enumeration.nextElement().getAttributes();
