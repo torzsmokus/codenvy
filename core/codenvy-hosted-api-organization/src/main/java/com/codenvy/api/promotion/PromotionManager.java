@@ -14,19 +14,27 @@
  */
 package com.codenvy.api.promotion;
 
+import javax.inject.Inject;
 import java.util.List;
 
 /**
  * @author Sergii Leschenko
  */
 public class PromotionManager {
+    private final PromotionDao promotionDao;
+
+    @Inject
+    public PromotionManager(PromotionDao promotionDao) {
+        this.promotionDao = promotionDao;
+    }
+
     /**
      * Returns active promotions for specified account owner
      *
      * @param owner
-     *         account id of owner
+     *         account name of owner
      */
-    List<Promotion> getByOwner(String owner) {
-        throw new UnsupportedOperationException();
+    List<PromotionImpl> getByOwner(String owner) {
+        return promotionDao.getByOwner(owner);
     }
 }

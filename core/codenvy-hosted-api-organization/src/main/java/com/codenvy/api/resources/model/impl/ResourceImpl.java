@@ -19,13 +19,18 @@ import com.codenvy.api.resources.model.Resource;
 /**
  * @author Sergii Leschenko
  */
-public class ResourcesImpl implements Resource {
+public class ResourceImpl implements Resource {
     private String unit;
     private String type;
-    private int    amount;
+    private long    amount;
 
-    public ResourcesImpl(String unit, String type, int amount) {
+    public ResourceImpl(String unit, String type, long amount) {
         this.unit = unit;
+        this.type = type;
+        this.amount = amount;
+    }
+
+    public ResourceImpl(String type, long amount) {
         this.type = type;
         this.amount = amount;
     }
@@ -36,7 +41,7 @@ public class ResourcesImpl implements Resource {
     }
 
     @Override
-    public int getAmount() {
+    public long  getAmount() {
         return amount;
     }
 

@@ -15,13 +15,13 @@
 package com.codenvy.api.promotion;
 
 import com.codenvy.api.resources.ResourcesProvider;
-import com.codenvy.api.resources.model.Resource;
+import com.codenvy.api.resources.model.impl.ResourceImpl;
 
 import javax.inject.Inject;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.stream.Collectors;
+
+import static com.codenvy.api.resources.ResourceHelper.groupResources;
 
 /**
  * @author Sergii Leschenko
@@ -35,15 +35,11 @@ public class PromotionResourceProvider implements ResourcesProvider {
     }
 
     @Override
-    public List<Resource> getAvailableResources(String account) {
-        final List<Promotion> promotions = promotionManager.getByOwner(account);
-        Map<String, Resource> resources = new HashMap<>();
-        for (Promotion promotion : promotions) {
-            for (Resource resource : promotion.getResources()) {
-                //TODO calculate sum of each type of resources
-                resources.put(resource.getType(), resource);
-            }
-        }
-        return new ArrayList<>(resources.values());
+    public List<ResourceImpl> getAvailableResources(String account) {
+        final List<PromotionImpl> promotions = promotionManager.getByOwner(account);
+        final List<ResourceImpl> allResources = promotions.stream()
+                                                          .flatMap(promotion -> promotion.getResources().stream())
+                                                          .collect(Collectors.toList());
+        return groupResources(allResources);
     }
 }

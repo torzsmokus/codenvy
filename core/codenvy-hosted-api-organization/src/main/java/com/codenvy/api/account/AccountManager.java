@@ -14,7 +14,14 @@
  */
 package com.codenvy.api.account;
 
+import com.codenvy.api.account.impl.AccountImpl;
+import com.codenvy.api.organization.OrganizationDao;
+import com.codenvy.api.organization.model.impl.OrganizationImpl;
+
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.api.core.ServerException;
+import org.eclipse.che.api.user.server.dao.User;
+import org.eclipse.che.api.user.server.dao.UserDao;
 
 import javax.inject.Inject;
 
@@ -22,21 +29,13 @@ import javax.inject.Inject;
  * @author Sergii Leschenko
  */
 public class AccountManager {
-    private final AccountDao accountDao;
+    private final OrganizationDao organizationDao;
+    private final UserDao         userDao;
 
     @Inject
-    public AccountManager(AccountDao accountDao) {
-        this.accountDao = accountDao;
-    }
-
-    /**
-     * Returns account by specified id
-     *
-     * @param accountId
-     *         id of account
-     */
-    public Account getById(String accountId) throws NotFoundException {
-        return accountDao.getById(accountId);
+    public AccountManager(OrganizationDao organizationDao, UserDao userDao) {
+        this.organizationDao = organizationDao;
+        this.userDao = userDao;
     }
 
     /**
@@ -45,8 +44,17 @@ public class AccountManager {
      * @param accountName
      *         name of account
      */
-    public Account getByName(String accountName) throws NotFoundException {
-        return accountDao.getByName(accountName);
+    public Account getByName(String accountName) throws NotFoundException, ServerException {
+        try {
+            final User user = userDao.getByName(accountName);
+            return new AccountImpl(user.getName(), Account.Type.PERSONAL);
+        } catch (NotFoundException userNotFound) {
+            try {
+                final OrganizationImpl organization = organizationDao.getByName(accountName);
+                return new AccountImpl(organization.getName(), Account.Type.ORGANIZATIONAL);
+            } catch (NotFoundException organizationNotFound) {
+                throw new NotFoundException(String.format("Account with name '%s' was not found", accountName));
+            }
+        }
     }
-
 }

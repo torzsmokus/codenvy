@@ -14,7 +14,7 @@
  */
 package com.codenvy.api.resources.model;
 
-import java.util.Set;
+import java.util.List;
 
 /**
  * Describes resources usage session
@@ -45,7 +45,7 @@ public interface Session {
     /**
      * Returns list of resources which are used in this session
      */
-    Set<Resource> getResources();
+    List<? extends Resource> getResources();
 
     /**
      * Returns timestamp of session start

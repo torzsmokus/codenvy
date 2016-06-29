@@ -19,6 +19,8 @@ import com.codenvy.api.resources.model.Resource;
 import java.util.List;
 
 /**
+ * Entity for temporary granting account to use some resources
+ *
  * @author Sergii Leschenko
  */
 public interface Promotion {
@@ -50,5 +52,5 @@ public interface Promotion {
     /**
      * Returns list of resources which can be used by owner
      */
-    List<Resource> getResources();
+    List<? extends Resource> getResources();
 }

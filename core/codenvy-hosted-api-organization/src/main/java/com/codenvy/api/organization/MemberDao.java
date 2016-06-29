@@ -25,6 +25,7 @@ import org.eclipse.che.api.local.storage.LocalStorageFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,6 +42,7 @@ public class MemberDao {
     private final LocalStorage         memberStorage;
     public final  Map<Key, MemberImpl> members;
 
+    @Inject
     public MemberDao(LocalStorageFactory storageFactory) throws IOException {
         this.members = new HashMap<>();
         this.memberStorage = storageFactory.create("members.json");

@@ -26,11 +26,6 @@ public interface Account {
     }
 
     /**
-     * Returns id of account
-     */
-    String getId();
-
-    /**
      * Returns name of account
      *
      * <p>It should be equals to user name if it is {@link Type#PERSONAL} account

@@ -27,7 +27,7 @@ public interface Resource {
     /**
      * Returns amount of resources
      */
-    int getAmount();
+    long getAmount();
 
     /**
      * Returns unit of resources, e.g. for RAM type it should be equal to mb

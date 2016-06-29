@@ -21,7 +21,6 @@ package com.codenvy.api.organization.model;
  * @author Sergii Leschenko
  */
 public interface Organization {
-
     /**
      * Returns id of organization
      */

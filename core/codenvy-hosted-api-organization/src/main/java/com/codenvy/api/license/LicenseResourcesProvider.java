@@ -16,6 +16,7 @@ package com.codenvy.api.license;
 
 import com.codenvy.api.resources.ResourcesProvider;
 import com.codenvy.api.resources.model.Resource;
+import com.codenvy.api.resources.model.impl.ResourceImpl;
 
 import org.eclipse.che.api.core.NotFoundException;
 
@@ -34,7 +35,7 @@ public class LicenseResourcesProvider implements ResourcesProvider {
     }
 
     @Override
-    public List<Resource> getAvailableResources(String accountId) throws NotFoundException {
+    public List<ResourceImpl> getAvailableResources(String accountId) throws NotFoundException {
         return licenseDao.getByOwner(accountId).getResources();
     }
 }

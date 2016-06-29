@@ -47,7 +47,6 @@ public class LicenseDao {
         this.licenses = new HashMap<>();
     }
 
-
     @PostConstruct
     public void load() {
         licenses.putAll(licenseStorage.loadMap(new TypeToken<Map<String, LicenseImpl>>() {}));
@@ -96,7 +95,7 @@ public class LicenseDao {
     }
 
     /**
-     * Returns license by owner
+     * Returns active license by owner
      *
      * @param owner
      *         id of account owner

@@ -20,7 +20,9 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Permits account use some resources
+ * Permits account use some resources.
+ *
+ * <p>There should by only one active license for one account
  *
  * @author gazarenkov
  * @author Sergii Leschenko
@@ -36,11 +38,6 @@ public interface License {
      * Returns id of account owner
      */
     String getOwner();
-
-    /**
-     * Returns if of license type
-     */
-    String getType();
 
     /**
      * Returns time when license became active

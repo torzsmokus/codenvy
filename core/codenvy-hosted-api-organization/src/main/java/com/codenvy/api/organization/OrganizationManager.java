@@ -14,12 +14,14 @@
  */
 package com.codenvy.api.organization;
 
+import com.codenvy.api.organization.model.Limit;
 import com.codenvy.api.organization.model.Organization;
 import com.codenvy.api.organization.model.impl.MemberImpl;
 import com.codenvy.api.organization.model.impl.OrganizationImpl;
 
 import org.eclipse.che.api.core.ConflictException;
 import org.eclipse.che.api.core.NotFoundException;
+import org.eclipse.che.commons.annotation.Nullable;
 import org.eclipse.che.commons.lang.NameGenerator;
 
 import javax.inject.Inject;
@@ -49,10 +51,12 @@ public class OrganizationManager {
      *
      * @param name
      *         name of organization
+     * @param parent
+     *         name of parent organization. Can be nullable
      * @return created organization
      */
-    public OrganizationImpl create(String name) throws ConflictException {
-        final OrganizationImpl organization = new OrganizationImpl(name, NameGenerator.generate("organization", 16), null);
+    public OrganizationImpl create(String name, @Nullable String parent) throws ConflictException {
+        final OrganizationImpl organization = new OrganizationImpl(name, NameGenerator.generate("organization", 16), parent);
         organizationDao.create(organization);
         return organization;
     }
@@ -101,5 +105,13 @@ public class OrganizationManager {
             }
         }
         return result;
+    }
+
+    public Limit getParentLimit(String account) {
+        return organizationDao.getParentLimit(account);
+    }
+
+    public OrganizationImpl getByName(String name) throws NotFoundException {
+        return organizationDao.getByName(name);
     }
 }

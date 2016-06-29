@@ -14,17 +14,14 @@
  */
 package com.codenvy.api;
 
-import com.codenvy.api.account.OrganizationAccountProvider;
-import com.codenvy.api.account.UserAccountProvider;
-import com.codenvy.api.organization.OrganizationDao;
+import com.codenvy.api.license.LicenseResourcesProvider;
 import com.codenvy.api.organization.OrganizationService;
+import com.codenvy.api.promotion.PromotionResourceProvider;
+import com.codenvy.api.resources.ResourcesProvider;
+import com.codenvy.api.resources.ResourcesService;
 import com.google.inject.AbstractModule;
-
-import org.eclipse.che.api.user.server.dao.UserDao;
-
-import static com.google.inject.matcher.Matchers.subclassesOf;
-import static org.eclipse.che.inject.Matchers.names;
-
+import com.google.inject.multibindings.Multibinder;
+import com.google.inject.name.Names;
 
 /**
  * @author Sergii Leschenko
@@ -32,14 +29,15 @@ import static org.eclipse.che.inject.Matchers.names;
 public class OrganizationModule extends AbstractModule {
     @Override
     protected void configure() {
+        //TODO remove it
+        //temporary binding for usage im memory implementation in codenvy
+        bind(String.class).annotatedWith(Names.named("che.conf.storage")).toInstance("/home/codenvy/codenvy-data/storage");
+
         bind(OrganizationService.class);
+        bind(ResourcesService.class);
 
-        UserAccountProvider userAccountProvider = new UserAccountProvider();
-        requestInjection(userAccountProvider);
-        bindInterceptor(subclassesOf(UserDao.class), names("create"), userAccountProvider);
-
-        OrganizationAccountProvider organizationAccountProvider = new OrganizationAccountProvider();
-        requestInjection(organizationAccountProvider);
-        bindInterceptor(subclassesOf(OrganizationDao.class), names("create"), organizationAccountProvider);
+        Multibinder<ResourcesProvider> resourcesProviderBinder = Multibinder.newSetBinder(binder(), ResourcesProvider.class);
+        resourcesProviderBinder.addBinding().to(PromotionResourceProvider.class);
+        resourcesProviderBinder.addBinding().to(LicenseResourcesProvider.class);
     }
 }

@@ -56,8 +56,8 @@ public class OrganizationService extends Service {
      * @return created organization
      */
     @POST
-    public OrganizationDto create(@QueryParam("name") String name) throws ConflictException {
-        return toDto(organizationManager.create(name));
+    public OrganizationDto create(@QueryParam("name") String name, @QueryParam("parent") String parent) throws ConflictException {
+        return toDto(organizationManager.create(name, parent));
     }
 
     /**

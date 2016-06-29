@@ -14,57 +14,70 @@
  */
 package com.codenvy.api.shared.dto;
 
-import com.codenvy.api.license.model.License;
+import com.codenvy.api.resources.model.Session;
 
 import org.eclipse.che.dto.shared.DTO;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author Sergii Leschenko
  */
 @DTO
-public interface LicenseDto extends License {
+public interface SessionDto extends Session {
     @Override
     String getId();
 
     void setId(String id);
 
-    LicenseDto withId(String id);
+    SessionDto withId(String id);
 
     @Override
-    String getOwner();
+    String getUser();
 
-    void setOwner(String owner);
+    void setUser(String user);
 
-    LicenseDto withOwner(String owner);
-
-    @Override
-    long getStartTime();
-
-    void setStartTime(long startTime);
-
-    LicenseDto withStartTime(long startTime);
+    SessionDto withUser(String user);
 
     @Override
-    long getEndTime();
+    String getAccount();
 
-    void setEndTime(long endTime);
+    void setAccount(String account);
 
-    LicenseDto withEndTime(long endTime);
+    SessionDto withAccount(String account);
+
+    @Override
+    String getWorkspace();
+
+    void setWorkspace(String workspace);
+
+    SessionDto withWorkspace(String workspace);
 
     @Override
     List<ResourceDto> getResources();
 
     void setResources(List<ResourceDto> resources);
 
-    LicenseDto withResources(List<ResourceDto> resources);
+    SessionDto withResources(List<ResourceDto> resources);
 
     @Override
-    Map<String, String> getAttributes();
+    long getStartTime();
 
-    void setAttributes(Map<String, String> attributes);
+    void setStartTime(long startTime);
 
-    LicenseDto withAttributes(Map<String, String> attributes);
+    SessionDto withStartTime(long startTime);
+
+    @Override
+    long getStopTime();
+
+    void setStopTime(long stopTime);
+
+    SessionDto withStopTime(long stopTime);
+
+    @Override
+    String getStopReason();
+
+    void setStopReason(String stopReason);
+
+    SessionDto withStopReason(String stopReason);
 }

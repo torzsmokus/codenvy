@@ -21,19 +21,12 @@ import com.google.common.base.Objects;
  * @author Sergii Leschenko
  */
 public class AccountImpl implements Account {
-    private final String id;
     private       String name;
     private final Type   type;
 
-    public AccountImpl(String id, String name, Type type) {
-        this.id = id;
+    public AccountImpl(String name, Type type) {
         this.name = name;
         this.type = type;
-    }
-
-    @Override
-    public String getId() {
-        return id;
     }
 
     @Override
@@ -51,21 +44,19 @@ public class AccountImpl implements Account {
         if (this == o) return true;
         if (!(o instanceof AccountImpl)) return false;
         AccountImpl account = (AccountImpl)o;
-        return Objects.equal(id, account.id) &&
-               Objects.equal(name, account.name) &&
+        return Objects.equal(name, account.name) &&
                Objects.equal(type, account.type);
     }
 
     @Override
     public int hashCode() {
-        return Objects.hashCode(id, name, type);
+        return Objects.hashCode(name, type);
     }
 
     @Override
     public String toString() {
         return "AccountImpl{" +
-               "id='" + id + '\'' +
-               ", name='" + name + '\'' +
+               "name='" + name + '\'' +
                ", type=" + type +
                '}';
     }

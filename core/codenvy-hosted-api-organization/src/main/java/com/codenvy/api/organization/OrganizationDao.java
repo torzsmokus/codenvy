@@ -14,7 +14,9 @@
  */
 package com.codenvy.api.organization;
 
+import com.codenvy.api.organization.model.Limit;
 import com.codenvy.api.organization.model.Organization;
+import com.codenvy.api.organization.model.impl.LimitImpl;
 import com.codenvy.api.organization.model.impl.OrganizationImpl;
 import com.google.common.reflect.TypeToken;
 
@@ -25,10 +27,13 @@ import org.eclipse.che.api.local.storage.LocalStorageFactory;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
+import javax.inject.Inject;
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +43,7 @@ public class OrganizationDao {
     private final Map<String, OrganizationImpl> organizations = new HashMap<>();
     private final LocalStorage organizationStorage;
 
+    @Inject
     public OrganizationDao(LocalStorageFactory storageFactory) throws IOException {
         organizationStorage = storageFactory.create("organization.json");
     }
@@ -81,5 +87,21 @@ public class OrganizationDao {
         if (removedOrg == null) {
             throw new NotFoundException("Organization with id '%s' was not found");
         }
+    }
+
+    public OrganizationImpl getByName(String organizationName) throws NotFoundException {
+        final Optional<OrganizationImpl> optOrganization = organizations.values()
+                                                                        .stream()
+                                                                        .filter(org -> org.getName().equals(organizationName))
+                                                                        .findAny();
+        if (!optOrganization.isPresent()) {
+            throw new NotFoundException(String.format("Organization with name '%s' was not found", organizationName));
+        }
+        return optOrganization.get();
+    }
+
+    public Limit getParentLimit(String account) {
+        //TODO Fix it
+        return new LimitImpl(Collections.emptyList(), new HashMap<>());
     }
 }

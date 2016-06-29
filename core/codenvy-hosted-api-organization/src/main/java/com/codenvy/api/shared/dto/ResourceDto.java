@@ -31,11 +31,11 @@ public interface ResourceDto extends Resource {
     ResourceDto withType(String type);
 
     @Override
-    int getAmount();
+    long getAmount();
 
-    void setAmount(int amount);
+    void setAmount(long amount);
 
-    ResourceDto withAmount(int amount);
+    ResourceDto withAmount(long amount);
 
     @Override
     String getUnit();
