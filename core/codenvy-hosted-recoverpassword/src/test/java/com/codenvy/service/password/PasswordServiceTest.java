@@ -117,8 +117,8 @@ public class PasswordServiceTest {
 
         doReturn(USERNAME).when(user).getEmail();
         DependencySupplierImpl dependencies = new DependencySupplierImpl();
-        dependencies.addComponent(UserDao.class, userDao);
-        dependencies.addComponent(UserProfileDao.class, userProfileDao);
+        dependencies.addInstance(UserDao.class, userDao);
+        dependencies.addInstance(UserProfileDao.class, userProfileDao);
 
     }
 
