@@ -12,36 +12,19 @@
  * is strictly forbidden unless prior written permission is obtained
  * from Codenvy S.A..
  */
-package com.codenvy.api.license.model;
-
-import com.codenvy.api.resources.model.ProvidedResources;
-import com.codenvy.api.resources.model.Resource;
+package com.codenvy.api.resources.model;
 
 import java.util.List;
-import java.util.Map;
 
 /**
- * Permits account use some resources.
- *
- * <p>There should by only one active license for one account
- *
- * @author gazarenkov
  * @author Sergii Leschenko
  */
-public interface License {
+public interface ProvidedResources {
+    List<Resource> getResources();
 
-    /**
-     * Returns id of account owner
-     */
-    String getOwner();
+    Long getStartTime();
 
-    /**
-     * Returns list of resources which can be used by owner
-     */
-    List<? extends Resource> getResources();
+    Long getStopTime();
 
-    /**
-     * Returns list of resources which can be used by owner
-     */
-    List<? extends ProvidedResources> getDetails();
+    String getProvider();
 }

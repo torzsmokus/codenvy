@@ -27,13 +27,6 @@ import java.util.Map;
 @DTO
 public interface LicenseDto extends License {
     @Override
-    String getId();
-
-    void setId(String id);
-
-    LicenseDto withId(String id);
-
-    @Override
     String getOwner();
 
     void setOwner(String owner);
@@ -41,30 +34,9 @@ public interface LicenseDto extends License {
     LicenseDto withOwner(String owner);
 
     @Override
-    long getStartTime();
-
-    void setStartTime(long startTime);
-
-    LicenseDto withStartTime(long startTime);
-
-    @Override
-    long getEndTime();
-
-    void setEndTime(long endTime);
-
-    LicenseDto withEndTime(long endTime);
-
-    @Override
     List<ResourceDto> getResources();
 
     void setResources(List<ResourceDto> resources);
 
     LicenseDto withResources(List<ResourceDto> resources);
-
-    @Override
-    Map<String, String> getAttributes();
-
-    void setAttributes(Map<String, String> attributes);
-
-    LicenseDto withAttributes(Map<String, String> attributes);
 }

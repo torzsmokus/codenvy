@@ -14,6 +14,8 @@
  */
 package com.codenvy.api.organization.model;
 
+import javax.validation.constraints.Null;
+
 /**
  * Describes group of users that can use shared resources
  *
@@ -32,7 +34,8 @@ public interface Organization {
     String getName();
 
     /**
-     * Returns id of parent organization
+     * Returns id of parent organization or null if it is root organization
      */
+    @Null
     String getParent();
 }
